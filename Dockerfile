@@ -1,6 +1,6 @@
 FROM rust:slim-bookworm as builder
 
-WORKDIR /ip
+WORKDIR /EloStealo
 
 COPY . .
 
@@ -8,9 +8,9 @@ RUN cargo build --release
 
 FROM debian:bookworm-slim as runtime
 
-WORKDIR /ip
+WORKDIR /EloStealo
 
-COPY --from=builder /ip/target/release/api api
+COPY --from=builder /EloStealo/target/release/api api
 COPY config config
 COPY client/dist client/dist
 

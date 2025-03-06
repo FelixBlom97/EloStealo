@@ -4,7 +4,7 @@ use mongodb::bson::{spec::BinarySubtype, Binary};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct ChessDTO {
+pub struct GameModel {
     pub white: String,
     pub black: String,
     pub game: Binary,
@@ -14,12 +14,12 @@ pub struct ChessDTO {
     pub filter_id_black: i32,
 }
 
-pub fn to_dto(chess_game: &ChessGame) -> ChessDTO {
+pub fn chess_game_to_model(chess_game: &ChessGame) -> GameModel {
     let game_bytes = Binary {
         subtype: BinarySubtype::Generic,
         bytes: encode_game(&chess_game.game),
     };
-    ChessDTO {
+    GameModel {
         white: chess_game.white.clone(),
         black: chess_game.black.clone(),
         game: game_bytes,
@@ -30,7 +30,7 @@ pub fn to_dto(chess_game: &ChessGame) -> ChessDTO {
     }
 }
 
-pub fn from_dto(chess_dto: ChessDTO) -> ChessGame {
+pub fn model_to_chess_game(chess_dto: GameModel) -> ChessGame {
     let db_game: Vec<u8> = chess_dto.game.bytes;
     ChessGame {
         white: chess_dto.white,
