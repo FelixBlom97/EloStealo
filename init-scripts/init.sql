@@ -1,3 +1,5 @@
+DROP TABLE games;
+
 CREATE TABLE IF NOT EXISTS games (
     id SERIAL PRIMARY KEY,
     game JSONB NOT NULL

@@ -7,7 +7,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use domain::chessgame::ChessGame;
 use persistence::db::{
-    get_stealo_rules, load_game, load_game_info, save_game, update_game, GameInfo, StealoRule,
+    get_stealo_rules, load_game, load_game_info, save_game, update_game, GameInfoMong, StealoRuleMong,
 };
 use tower_sessions::Session;
 use tracing::log;
@@ -86,7 +86,7 @@ pub async fn get_local_info(
 }
 
 // Sends an empty vector if it fails
-pub async fn stealo_rules(State(state): State<AppState>) -> Json<Vec<StealoRule>> {
+pub async fn stealo_rules(State(state): State<AppState>) -> Json<Vec<StealoRuleMong>> {
     let rules = get_stealo_rules(state.database).await;
     Json(rules)
 }
@@ -114,7 +114,7 @@ pub async fn start_online(
 pub async fn get_game_info(
     State(state): State<AppState>,
     Json(get_rule): Json<GetInfo>,
-) -> Result<Json<GameInfo>, StatusCode> {
+) -> Result<Json<GameInfoMong>, StatusCode> {
     let game_info = load_game_info(state.database, get_rule.roomcode, get_rule.color).await;
     match game_info {
         Ok(info) => Ok(Json(info)),

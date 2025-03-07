@@ -68,22 +68,22 @@ pub async fn update_game(
     }
 }
 
-// #[derive(Serialize, Deserialize)]
-// pub struct GameInfo {
-//     pub white: String,
-//     pub black: String,
-//     pub white_elo: i32,
-//     pub black_elo: i32,
-//     pub white_stealo: i32,
-//     pub black_stealo: i32,
-// }
+#[derive(Serialize, Deserialize)]
+pub struct GameInfoMong {
+    pub white: String,
+    pub black: String,
+    pub white_elo: i32,
+    pub black_elo: i32,
+    pub white_stealo: i32,
+    pub black_stealo: i32,
+}
 
 // Performs a couple of checks so that certain game info is only sent after the game has ended.
 pub async fn load_game_info(
     database: Database,
     room_code: String,
     color: String,
-) -> Result<GameInfo, Error> {
+) -> Result<GameInfoMong, Error> {
     let game_collection = database.collection::<GameModel>("games");
     let chess_dto = game_collection
         .find_one(doc! {"_id":room_code}, None)
@@ -110,7 +110,7 @@ pub async fn load_game_info(
     } else {
         0
     };
-    Ok(GameInfo {
+    Ok(GameInfoMong {
         white: chessgame.white,
         black: chessgame.black,
         white_elo,
@@ -122,16 +122,16 @@ pub async fn load_game_info(
 
 // Elo stealo rules Collection
 
-// #[derive(Serialize, Deserialize)]
-// pub struct StealoRule {
-//     pub id: i32,
-//     pub name: String,
-//     pub elo: i32,
-//     pub description: String,
-// }
+#[derive(Serialize, Deserialize)]
+pub struct StealoRuleMong {
+    pub id: i32,
+    pub name: String,
+    pub elo: i32,
+    pub description: String,
+}
 
-pub async fn get_stealo_rules(database: Database) -> Vec<StealoRule> {
-    let collection = database.collection::<StealoRule>("rules");
+pub async fn get_stealo_rules(database: Database) -> Vec<StealoRuleMong> {
+    let collection = database.collection::<StealoRuleMong>("rules");
     let cursor = match collection.find(None, None).await {
         Ok(cursor) => cursor,
         Err(e) => {

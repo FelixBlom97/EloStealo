@@ -12,3 +12,4 @@ serde = { version = "1.0.203", features = ["derive"] }
 log = "0.4.21"
 futures = "0.3.30"
 anyhow = "1.0.97"
+base64 = "0.22.1"

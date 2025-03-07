@@ -2,12 +2,13 @@ use chess::{Action, ChessMove, Color, Game, Piece, Square};
 use domain::chessgame::ChessGame;
 use mongodb::bson::{spec::BinarySubtype, Binary};
 use serde::{Deserialize, Serialize};
+use base64::{engine::general_purpose::STANDARD_NO_PAD, Engine as _};
 
 #[derive(Serialize, Deserialize)]
 pub struct GameModel {
     pub white: String,
     pub black: String,
-    pub game: Binary,
+    pub game: String,
     pub elo_white: i32,
     pub elo_black: i32,
     pub filter_id_white: i32,
@@ -15,14 +16,10 @@ pub struct GameModel {
 }
 
 pub fn chess_game_to_model(chess_game: &ChessGame) -> GameModel {
-    let game_bytes = Binary {
-        subtype: BinarySubtype::Generic,
-        bytes: encode_game(&chess_game.game),
-    };
     GameModel {
         white: chess_game.white.clone(),
         black: chess_game.black.clone(),
-        game: game_bytes,
+        game: STANDARD_NO_PAD.encode(encode_game(&chess_game.game)),
         elo_white: chess_game.elo_white,
         elo_black: chess_game.elo_black,
         filter_id_white: chess_game.filter_id_white,
@@ -30,16 +27,15 @@ pub fn chess_game_to_model(chess_game: &ChessGame) -> GameModel {
     }
 }
 
-pub fn model_to_chess_game(chess_dto: GameModel) -> ChessGame {
-    let db_game: Vec<u8> = chess_dto.game.bytes;
+pub fn model_to_chess_game(game_model: GameModel) -> ChessGame {
     ChessGame {
-        white: chess_dto.white,
-        black: chess_dto.black,
-        elo_white: chess_dto.elo_white,
-        elo_black: chess_dto.elo_black,
-        filter_id_white: chess_dto.filter_id_white,
-        filter_id_black: chess_dto.filter_id_black,
-        game: decode_game(db_game),
+        white: game_model.white,
+        black: game_model.black,
+        elo_white: game_model.elo_white,
+        elo_black: game_model.elo_black,
+        filter_id_white: game_model.filter_id_white,
+        filter_id_black: game_model.filter_id_black,
+        game: decode_game(STANDARD_NO_PAD.decode(game_model.game).unwrap()),
     }
 }
 
