@@ -7,7 +7,8 @@ use axum::http::StatusCode;
 use axum::Json;
 use domain::chessgame::ChessGame;
 use persistence::db::{
-    get_stealo_rules, load_game, load_game_info, save_game, update_game, GameInfoMong, StealoRuleMong,
+    get_stealo_rules, load_game, load_game_info, save_game, update_game, GameInfoMong,
+    StealoRuleMong,
 };
 use tower_sessions::Session;
 use tracing::log;

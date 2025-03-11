@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS games (
 );
 
 CREATE TABLE IF NOT EXISTS rules (
-    id SERIAL PRIMARY KEY,
-    rule JSONB NOT NULL
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(60) NOT NULL,
+    elo INTEGER,
+    description VARCHAR(120)
 );

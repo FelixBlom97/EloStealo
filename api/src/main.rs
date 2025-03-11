@@ -28,7 +28,9 @@ async fn main() {
         .map_err(|e| log::error!("Error while loading settings: {}", e))
         .unwrap();
 
-    let client_options = ClientOptions::parse("Imma change this to a containerized postgress db").await.unwrap();
+    let client_options = ClientOptions::parse("Imma change this to a containerized postgress db")
+        .await
+        .unwrap();
     let client = Client::with_options(client_options).expect("Failed to connect to database.");
     let db = client.database("EloStealo");
 

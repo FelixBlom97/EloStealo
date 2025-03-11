@@ -1,13 +1,12 @@
 // Session store for online play.
 // Keep track of which sockets are connected and are players in each room.
 
+use dashmap::DashMap;
 use serde::Serialize;
+use socketioxide::socket::Sid;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use dashmap::DashMap;
-use socketioxide::socket::Sid;
 use uuid::Uuid;
-
 
 #[derive(Serialize)]
 pub struct Session {
