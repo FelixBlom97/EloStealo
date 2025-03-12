@@ -16,7 +16,20 @@ impl EloStealoPostgresStore {
 
 impl EloStealoRepository for EloStealoPostgresStore {
     async fn save_game(&self, id: String, new_game: ChessGame) -> anyhow::Result<()> {
-        todo!()
+        sqlx::query!(
+            r#"
+            INSERT INTO games (id, white, black, game, elo_white, elo_black, filter_id_white, filter_id_black)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            "#,
+            new_game.id,
+            new_game.white,
+            new_game.black,
+            new_game.game as _,
+            new_game.elo_white,
+            new_game.elo_black,
+            new_game.filter_id_white,
+            new_game.filter_id_black
+        ).execute(&self.pool).await?;
     }
 
     async fn get_game(&self, id: String) -> anyhow::Result<Option<ChessGame>> {
