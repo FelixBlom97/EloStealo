@@ -1,4 +1,4 @@
-use crate::movefilter::MoveFilter;
+use crate::filters::movefilter::MoveFilter;
 use chess::{Action, ChessMove, Game, Piece};
 
 pub struct MoveAfter {
@@ -9,6 +9,90 @@ pub struct MoveAfter {
 impl MoveAfter {
     pub fn new(piece: Piece, turn: u16) -> MoveAfter {
         MoveAfter { piece, turn }
+    }
+
+    pub fn queen_cant_move_after_12() -> Self {
+        Self {
+            piece: Piece::Queen,
+            turn: 12,
+        }
+    }
+
+    pub fn queen_cant_move_after_9() -> Self {
+        Self {
+            piece: Piece::Queen,
+            turn: 9,
+        }
+    }
+
+    pub fn queen_cant_move_after_6() -> Self {
+        Self {
+            piece: Piece::Queen,
+            turn: 6,
+        }
+    }
+
+    pub fn rook_cant_move_after_25() -> Self {
+        Self {
+            piece: Piece::Rook,
+            turn: 25,
+        }
+    }
+
+    pub fn rook_cant_move_after_20() -> Self {
+        Self {
+            piece: Piece::Rook,
+            turn: 20,
+        }
+    }
+
+    pub fn rook_cant_move_after_15() -> Self {
+        Self {
+            piece: Piece::Rook,
+            turn: 15,
+        }
+    }
+
+    pub fn bishop_cant_move_after_10() -> Self {
+        Self {
+            piece: Piece::Bishop,
+            turn: 10,
+        }
+    }
+
+    pub fn bishop_cant_move_after_15() -> Self {
+        Self {
+            piece: Piece::Bishop,
+            turn: 15,
+        }
+    }
+
+    pub fn bishop_cant_move_after_20() -> Self {
+        Self {
+            piece: Piece::Bishop,
+            turn: 20,
+        }
+    }
+
+    pub fn knight_cant_move_after_10() -> Self {
+        Self {
+            piece: Piece::Knight,
+            turn: 10,
+        }
+    }
+
+    pub fn knight_cant_move_after_15() -> Self {
+        Self {
+            piece: Piece::Knight,
+            turn: 15,
+        }
+    }
+
+    pub fn knight_cant_move_after_20() -> Self {
+        Self {
+            piece: Piece::Knight,
+            turn: 20,
+        }
     }
 }
 
@@ -26,7 +110,7 @@ impl MoveFilter for MoveAfter {
             }
         }
         let turn = counter / 2;
-        return turn > self.turn;
+        turn > self.turn
     }
 }
 

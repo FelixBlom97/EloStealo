@@ -1,20 +1,39 @@
-use std::fs;
 use persistence::stealo_rule::StealoRule;
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::{Read, Write};
+use std::{env, fs};
 
 fn main() -> anyhow::Result<()> {
-    let mut migrations_yml = serde_yaml::from_str::<serde_yaml::Value>("./migrations/migrations.yml")
-        .expect("Could not find migrations.yml");
-    let mut version: u64 = migrations_yml.get_mut("version").expect("Missing version")
-        .as_u64().expect("Expected version as number");
+    let mut migrations_yml =
+        File::open("./migrations/migrations.yml").expect("could not find migrations.yml");
+    let mut content = String::new();
+    migrations_yml.read_to_string(&mut content)?;
+    let mut migrations =
+        serde_yaml::from_str::<MigrationVersion>(&content).expect("Failed to parse migrations.yml");
     let rules_json = fs::read_to_string("./migrations/rules.json").expect("File not found.");
     let rules_data: RulesData = serde_json::from_str(&rules_json).expect("Invalid JSON format.");
-    if version != rules_data.version {
-        println!("MIGRATE THAT BISH");
-        version = rules_data.version;
-        serde_yaml::to_writer(std::io::stdout(), &version).expect("Could not write.");
-    }
-    else {
+    if migrations.version != rules_data.version {
+        println!("Migrating version {}", rules_data.version);
+        let database_url =
+            env::var("DATABASE_URL").unwrap_or_else(|_| "http://localhost:5433".into());
+        let postgres_user = env::var("POSTGRES_USER").unwrap_or_else(|_| "postgres".into());
+        let postgres_password = env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "postgres".into());
+        let database_name = env::var("DATABASE_NAME").unwrap_or_else(|_| "EloStealo".into());
+        let connection_string = format!(
+            "postgres://{}@{}/{}",
+            postgres_user, database_url, database_name
+        );
+
+        let new_version = MigrationVersion {
+            version: rules_data.version,
+        };
+        let new_version_str =
+            serde_yaml::to_string(&new_version).expect("Failed to serialize yaml");
+        File::create("./migrations/migrations.yml")?
+            .write_all(new_version_str.as_bytes())
+            .expect("Failed to overwrite migrations.yml");
+    } else {
         println!("Migrations already up to date. Skipping.");
     }
     Ok(())
@@ -24,4 +43,9 @@ fn main() -> anyhow::Result<()> {
 struct RulesData {
     version: u64,
     rules: Vec<StealoRule>,
+}
+
+#[derive(Deserialize, Serialize)]
+struct MigrationVersion {
+    version: u64,
 }

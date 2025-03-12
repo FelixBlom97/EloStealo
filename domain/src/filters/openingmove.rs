@@ -1,4 +1,4 @@
-use crate::movefilter::MoveFilter;
+use crate::filters::movefilter::MoveFilter;
 use chess::{ChessMove, Game};
 
 pub struct OpeningMove {
