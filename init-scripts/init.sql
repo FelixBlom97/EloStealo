@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS games (
 CREATE TABLE IF NOT EXISTS rules (
     id INTEGER PRIMARY KEY,
     name VARCHAR(60) NOT NULL,
-    elo INTEGER,
-    description VARCHAR(120)
+    elo INTEGER NOT NULL,
+    description VARCHAR(120) NOT NULL
 );

@@ -1,35 +1,26 @@
+use async_trait::async_trait;
 use crate::elo_stealo_repository::EloStealoRepository;
 use crate::game_info::GameInfo;
 use crate::stealo_rule::StealoRule;
 use domain::chessgame::ChessGame;
 use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 
 pub struct EloStealoPostgresStore {
     pool: PgPool,
 }
 
 impl EloStealoPostgresStore {
-    pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+    pub async fn new(connection_string: String) -> Box<dyn EloStealoRepository> {
+        let pool = PgPoolOptions::new().connect(&connection_string).await.expect("Could not connect to postgres");
+        Box::new(EloStealoPostgresStore { pool })
     }
 }
 
+#[async_trait]
 impl EloStealoRepository for EloStealoPostgresStore {
     async fn save_game(&self, id: String, new_game: ChessGame) -> anyhow::Result<()> {
-        sqlx::query!(
-            r#"
-            INSERT INTO games (id, white, black, game, elo_white, elo_black, filter_id_white, filter_id_black)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            "#,
-            new_game.id,
-            new_game.white,
-            new_game.black,
-            new_game.game as _,
-            new_game.elo_white,
-            new_game.elo_black,
-            new_game.filter_id_white,
-            new_game.filter_id_black
-        ).execute(&self.pool).await?;
+       todo!()
     }
 
     async fn get_game(&self, id: String) -> anyhow::Result<Option<ChessGame>> {
@@ -50,6 +41,29 @@ impl EloStealoRepository for EloStealoPostgresStore {
     }
 
     async fn get_stealo_rules(&self) -> anyhow::Result<Vec<StealoRule>> {
-        todo!()
+        let rules = sqlx::query_as!(
+            StealoRule,
+            r#"SELECT id, name, elo, description FROM rules"#
+        ).fetch_all(&self.pool).await?;
+        Ok(rules)
+    }
+
+    async fn insert_stealo_rule(&self, rule: StealoRule) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"INSERT INTO rules
+            VALUES ($1, $2, $3, $4)"#,
+            rule.id,
+            rule.name,
+            rule.elo,
+            rule.description
+        ).execute(&self.pool).await?;
+        Ok(())
+    }
+
+    async fn delete_old_stealo_rules(&self) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"DELETE FROM rules"#
+        ).execute(&self.pool).await?;
+        Ok(())
     }
 }

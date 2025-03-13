@@ -55,7 +55,7 @@ pub async fn update_game(
     match collection
         .update_one(
             doc! {"_id": id},
-            doc! {"$set": { "game": chess_dto.game}},
+            doc! {"$set": ""},
             None,
         )
         .await

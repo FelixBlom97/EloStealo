@@ -1,8 +1,7 @@
-use chess::{Action, ChessMove, Color, Game, Piece, Square};
+use anyhow::anyhow;
+use chess::{Action, ChessMove, Color, Game, Piece, Square, Board, MoveGen};
 use domain::chessgame::ChessGame;
-use mongodb::bson::{spec::BinarySubtype, Binary};
 use serde::{Deserialize, Serialize};
-use base64::{engine::general_purpose::STANDARD_NO_PAD, Engine as _};
 
 #[derive(Serialize, Deserialize)]
 pub struct GameModel {
@@ -35,7 +34,7 @@ pub fn model_to_chess_game(game_model: GameModel) -> ChessGame {
         elo_black: game_model.elo_black,
         rule_id_white: game_model.filter_id_white,
         rule_id_black: game_model.filter_id_black,
-        game: decode_game(STANDARD_NO_PAD.decode(game_model.game).unwrap()),
+        game: decode_game(game_model.game),
     }
 }
 
@@ -121,6 +120,51 @@ fn decode_game(db_game: Vec<u8>) -> Game {
     result
 }
 
+// MoveGen is deterministic and the currently known position with the most allowed moves is 218.
+// Therefore, we can encode every move into a byte (number in MoveGen) and have space left for
+// special actions like offering draws and resigning which we'll put at the end of the byte range.
+fn better_encode_game(game: &Game) -> anyhow::Result<Vec<u8>> {
+    let mut result: Vec<u8> = Vec::with_capacity(game.actions().len());
+    let mut current_pos = Board::default();
+    for action in game.actions() {
+        match action {
+            Action::MakeMove(chess_move) => {
+                let move_index = MoveGen::new_legal(&current_pos).position(|m| m == *chess_move)
+                    .ok_or_else(|| anyhow!("Cannot encode game"))?;
+                result.push(move_index as u8);
+                current_pos = current_pos.make_move_new(*chess_move);
+            }
+            Action::Resign(Color::White) => { result.push(255); }
+            Action::Resign(Color::Black) => { result.push(254); }
+            Action::OfferDraw(Color::White) => {result.push(253)}
+            Action::OfferDraw(Color::Black) => {result.push(252)}
+            Action::AcceptDraw => {result.push(251)}
+            Action::DeclareDraw => {result.push(250)}
+        }
+    }
+    Ok(result)
+}
+
+fn better_decode_game(game: Vec<u8>) -> anyhow::Result<Game> {
+    let mut result = Game::new();
+    for action in game {
+        match action {
+            255 => {result.resign(Color::White);},
+            254 => {result.resign(Color::Black);},
+            253 => {result.offer_draw(Color::White);},
+            252 => {result.offer_draw(Color::Black);},
+            251 => {result.accept_draw();},
+            250 => {result.declare_draw();},
+            n   => {
+                let mut moves = MoveGen::new_legal(&result.current_position());
+                let next_move = moves.nth(n as usize).ok_or_else(|| anyhow!("Cannot decode game"))?;
+                result.make_move(next_move);
+            }
+        }
+    }
+    Ok(result)
+}
+
 fn to_color(num: &u8) -> Color {
     if *num == 0 {
         Color::White
@@ -167,5 +211,14 @@ mod tests {
         let game = decode_game(db_game);
         assert_eq!(game.actions().len(), 3);
         assert!(game.result().is_some());
+    }
+
+    #[test]
+    pub fn test_encode_game_better() {
+        let mut game = Game::new();
+        game.make_move(ChessMove::new(Square::E2, Square::E4, None));
+        game.make_move(ChessMove::new(Square::E7, Square::E5, None));
+        let Ok(encoded) = better_encode_game(&game) else {panic!()};
+        println!("encoded: {:?}", encoded);
     }
 }

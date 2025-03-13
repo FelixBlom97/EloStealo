@@ -1,0 +1,15 @@
+FROM rust:slim-bookworm as builder
+
+WORKDIR /EloStealo
+
+COPY . .
+
+RUN cargo build --bin migrations --release
+
+FROM debian:bookworm-slim as runtime
+
+WORKDIR /EloStealo
+
+COPY --from=builder /EloStealo/target/release/mirgations migrations
+
+ENTRYPOINT ["./migrations"]

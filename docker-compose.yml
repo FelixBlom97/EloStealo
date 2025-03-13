@@ -21,13 +21,14 @@ services:
   migrations:
     image: "migrations"
     build:
-      context: ./migrations/
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile-migrations
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: "http://postgres:5432"
+      DATABASE_URL: postgres:5432
+      SQLX_OFFLINE: true
 
 
 volumes:
