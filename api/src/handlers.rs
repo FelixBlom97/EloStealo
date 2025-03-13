@@ -80,8 +80,8 @@ pub async fn get_local_info(
         black: chess_game.black,
         white_elo: chess_game.elo_white,
         black_elo: chess_game.elo_black,
-        white_stealo: chess_game.filter_id_white,
-        black_stealo: chess_game.filter_id_black,
+        white_stealo: chess_game.rule_id_white,
+        black_stealo: chess_game.rule_id_black,
     };
     Ok(Json(local_game_info))
 }

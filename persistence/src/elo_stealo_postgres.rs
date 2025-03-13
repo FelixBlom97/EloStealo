@@ -1,11 +1,11 @@
-use sqlx::PgPool;
-use domain::chessgame::ChessGame;
 use crate::elo_stealo_repository::EloStealoRepository;
 use crate::game_info::GameInfo;
 use crate::stealo_rule::StealoRule;
+use domain::chessgame::ChessGame;
+use sqlx::PgPool;
 
 pub struct EloStealoPostgresStore {
-    pool: PgPool
+    pool: PgPool,
 }
 
 impl EloStealoPostgresStore {
@@ -40,7 +40,12 @@ impl EloStealoRepository for EloStealoPostgresStore {
         todo!()
     }
 
-    async fn load_game_info(&self, id: String, room_code: String, color: String) -> anyhow::Result<Option<GameInfo>> {
+    async fn load_game_info(
+        &self,
+        id: String,
+        room_code: String,
+        color: String,
+    ) -> anyhow::Result<Option<GameInfo>> {
         todo!()
     }
 

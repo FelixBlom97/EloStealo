@@ -1,6 +1,8 @@
 use chess::{Action, ChessMove, Color, Game, Piece, Square};
 use domain::chessgame::ChessGame;
+use mongodb::bson::{spec::BinarySubtype, Binary};
 use serde::{Deserialize, Serialize};
+use base64::{engine::general_purpose::STANDARD_NO_PAD, Engine as _};
 
 #[derive(Serialize, Deserialize)]
 pub struct GameModel {
@@ -20,8 +22,8 @@ pub fn chess_game_to_model(chess_game: &ChessGame) -> GameModel {
         game: encode_game(&chess_game.game),
         elo_white: chess_game.elo_white,
         elo_black: chess_game.elo_black,
-        filter_id_white: chess_game.filter_id_white,
-        filter_id_black: chess_game.filter_id_black,
+        filter_id_white: chess_game.rule_id_white,
+        filter_id_black: chess_game.rule_id_black,
     }
 }
 
@@ -31,9 +33,9 @@ pub fn model_to_chess_game(game_model: GameModel) -> ChessGame {
         black: game_model.black,
         elo_white: game_model.elo_white,
         elo_black: game_model.elo_black,
-        filter_id_white: game_model.filter_id_white,
-        filter_id_black: game_model.filter_id_black,
-        game: decode_game(game_model.game),
+        rule_id_white: game_model.filter_id_white,
+        rule_id_black: game_model.filter_id_black,
+        game: decode_game(STANDARD_NO_PAD.decode(game_model.game).unwrap()),
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::game_model::{model_to_chess_game, chess_game_to_model, GameModel};
+use crate::game_model::{chess_game_to_model, model_to_chess_game, GameModel};
 use domain::chessgame::ChessGame;
 use futures::TryStreamExt;
 use mongodb::bson::{doc, spec::BinarySubtype, Binary};
@@ -21,8 +21,8 @@ pub async fn save_game(database: Database, id: String, new_game: ChessGame) -> R
         "game": new_game_binary,
         "elo_white": new_game.elo_white,
         "elo_black": new_game.elo_black,
-        "filter_id_white": new_game.filter_id_white,
-        "filter_id_black": new_game.filter_id_black,
+        "filter_id_white": new_game.rule_id_white,
+        "filter_id_black": new_game.rule_id_black,
     };
     match collection.insert_one(document, None).await {
         Ok(_insert_one) => Ok(()),
@@ -96,7 +96,7 @@ pub async fn load_game_info(
         0
     };
     let white_stealo = if color == "white" || game_has_ended {
-        chessgame.filter_id_white
+        chessgame.rule_id_white
     } else {
         0
     };
@@ -106,7 +106,7 @@ pub async fn load_game_info(
         0
     };
     let black_stealo = if color == "black" || game_has_ended {
-        chessgame.filter_id_black
+        chessgame.rule_id_black
     } else {
         0
     };
