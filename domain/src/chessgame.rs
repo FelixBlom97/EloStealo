@@ -1,4 +1,4 @@
-use crate::movefilter::generate_moves;
+use crate::move_generator::generate_moves;
 use crate::stringtomove::string_to_move;
 use chess::GameResult::{BlackResigns, Stalemate, WhiteResigns};
 use chess::{Action, Board, ChessMove, Color, Game, MoveGen};
@@ -9,8 +9,8 @@ pub struct ChessGame {
     pub game: Game,
     pub elo_white: i32,
     pub elo_black: i32,
-    pub filter_id_white: i32,
-    pub filter_id_black: i32,
+    pub rule_id_white: i32,
+    pub rule_id_black: i32,
 }
 
 impl ChessGame {
@@ -44,9 +44,9 @@ impl ChessGame {
         if self.game.result().is_some() {
             Vec::new()
         } else if self.game.side_to_move() == Color::White {
-            generate_moves(self.filter_id_white, &self.game)
+            generate_moves(self.rule_id_white, &self.game)
         } else {
-            generate_moves(self.filter_id_black, &self.game)
+            generate_moves(self.rule_id_black, &self.game)
         }
     }
 
@@ -95,8 +95,8 @@ pub fn new_game(
         game: g,
         elo_white: elo1,
         elo_black: elo2,
-        filter_id_white: stealo1,
-        filter_id_black: stealo2,
+        rule_id_white: stealo1,
+        rule_id_black: stealo2,
     }
 }
 

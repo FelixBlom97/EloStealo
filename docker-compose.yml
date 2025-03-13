@@ -12,6 +12,23 @@ services:
       - ./init-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5433:5432"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5432" ]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+
+  migrations:
+    image: "migrations"
+    build:
+      context: ./migrations/
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "http://postgres:5432"
+
 
 volumes:
   postgres-data:
