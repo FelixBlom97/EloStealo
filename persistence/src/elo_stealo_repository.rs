@@ -1,16 +1,17 @@
-use async_trait::async_trait;
 use crate::game_info::GameInfo;
 use crate::stealo_rule::StealoRule;
+use async_trait::async_trait;
 use domain::chessgame::ChessGame;
+use uuid::Uuid;
 
 #[async_trait]
 pub trait EloStealoRepository {
-    async fn save_game(&self, id: String, new_game: ChessGame) -> anyhow::Result<()>;
-    async fn get_game(&self, id: String) -> anyhow::Result<Option<ChessGame>>;
-    async fn update_game(&self, id: String, game: ChessGame) -> anyhow::Result<()>;
+    async fn save_game(&self, id: Uuid, new_game: ChessGame) -> anyhow::Result<()>;
+    async fn get_game(&self, id: Uuid) -> anyhow::Result<ChessGame>;
+    async fn update_game(&self, id: Uuid, game: ChessGame) -> anyhow::Result<()>;
     async fn load_game_info(
         &self,
-        id: String,
+        id: Uuid,
         room_code: String,
         color: String,
     ) -> anyhow::Result<Option<GameInfo>>;

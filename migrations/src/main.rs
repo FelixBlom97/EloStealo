@@ -1,10 +1,10 @@
-use persistence::stealo_rule::StealoRule;
+use persistence::elo_stealo_postgres::EloStealoPostgresStore;
 use persistence::elo_stealo_repository::EloStealoRepository;
+use persistence::stealo_rule::StealoRule;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::{env, fs};
-use persistence::elo_stealo_postgres::EloStealoPostgresStore;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -21,8 +21,7 @@ async fn main() -> anyhow::Result<()> {
     // Perform migrations if current version is behind.
     if migrations.version != rules_data.version {
         println!("Migrating version {}", rules_data.version);
-        let database_url =
-            env::var("DATABASE_URL").unwrap_or_else(|_| "localhost:5433".into());
+        let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "localhost:5433".into());
         let postgres_user = env::var("POSTGRES_USER").unwrap_or_else(|_| "postgres".into());
         let postgres_password = env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "postgres".into());
         let database_name = env::var("DATABASE_NAME").unwrap_or_else(|_| "EloStealo".into());

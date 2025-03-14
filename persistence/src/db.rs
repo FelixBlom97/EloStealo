@@ -50,22 +50,23 @@ pub async fn update_game(
     id: String,
     chess_game: &ChessGame,
 ) -> Result<(), Error> {
-    let collection = database.collection::<GameModel>("games");
-    let chess_dto = chess_game_to_model(chess_game);
-    match collection
-        .update_one(
-            doc! {"_id": id},
-            doc! {"$set": ""},
-            None,
-        )
-        .await
-    {
-        Ok(_update_one) => Ok(()),
-        Err(e) => {
-            log::error!("Failed to update games collection: {:?}", e);
-            Err(e)
-        }
-    }
+    // let collection = database.collection::<GameModel>("games");
+    // let chess_dto = chess_game_to_model(chess_game);
+    // match collection
+    //     .update_one(
+    //         doc! {"_id": id},
+    //         doc! {"$set": ""},
+    //         None,
+    //     )
+    //     .await
+    // {
+    //     Ok(_update_one) => Ok(()),
+    //     Err(e) => {
+    //         log::error!("Failed to update games collection: {:?}", e);
+    //         Err(e)
+    //     }
+    // }
+    Ok(())
 }
 
 #[derive(Serialize, Deserialize)]

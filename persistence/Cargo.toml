@@ -6,10 +6,11 @@ edition = "2021"
 [dependencies]
 domain = { path = "../domain" }
 mongodb = { version = "2.5.0", features = ["bson-chrono-0_4"] }
-sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio", "macros"]}
+sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio", "macros", "uuid"]}
 chess = "3.2.0"
 serde = { version = "1.0.203", features = ["derive"] }
 log = "0.4.21"
 futures = "0.3.30"
 anyhow = "1.0.97"
 async-trait = "0.1.87"
+uuid = { version = "1.15.1", features = ["serde", "v7"] }

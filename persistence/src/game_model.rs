@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use chess::{Action, ChessMove, Color, Game, Piece, Square, Board, MoveGen};
+use chess::{Action, Board, ChessMove, Color, Game, MoveGen, Piece, Square};
 use domain::chessgame::ChessGame;
 use serde::{Deserialize, Serialize};
 
@@ -10,8 +10,8 @@ pub struct GameModel {
     pub game: Vec<u8>,
     pub elo_white: i32,
     pub elo_black: i32,
-    pub filter_id_white: i32,
-    pub filter_id_black: i32,
+    pub rule_id_white: i32,
+    pub rule_id_black: i32,
 }
 
 pub fn chess_game_to_model(chess_game: &ChessGame) -> GameModel {
@@ -21,8 +21,8 @@ pub fn chess_game_to_model(chess_game: &ChessGame) -> GameModel {
         game: encode_game(&chess_game.game).unwrap(),
         elo_white: chess_game.elo_white,
         elo_black: chess_game.elo_black,
-        filter_id_white: chess_game.rule_id_white,
-        filter_id_black: chess_game.rule_id_black,
+        rule_id_white: chess_game.rule_id_white,
+        rule_id_black: chess_game.rule_id_black,
     }
 }
 
@@ -32,8 +32,8 @@ pub fn model_to_chess_game(game_model: GameModel) -> ChessGame {
         black: game_model.black,
         elo_white: game_model.elo_white,
         elo_black: game_model.elo_black,
-        rule_id_white: game_model.filter_id_white,
-        rule_id_black: game_model.filter_id_black,
+        rule_id_white: game_model.rule_id_white,
+        rule_id_black: game_model.rule_id_black,
         game: decode_game(game_model.game).unwrap(),
     }
 }
@@ -47,17 +47,22 @@ fn encode_game(game: &Game) -> anyhow::Result<Vec<u8>> {
     for action in game.actions() {
         match action {
             Action::MakeMove(chess_move) => {
-                let move_index = MoveGen::new_legal(&current_pos).position(|m| m == *chess_move)
+                let move_index = MoveGen::new_legal(&current_pos)
+                    .position(|m| m == *chess_move)
                     .ok_or_else(|| anyhow!("Cannot encode game"))?;
                 result.push(move_index as u8);
                 current_pos = current_pos.make_move_new(*chess_move);
             }
-            Action::Resign(Color::White) => { result.push(255); }
-            Action::Resign(Color::Black) => { result.push(254); }
-            Action::OfferDraw(Color::White) => {result.push(253)}
-            Action::OfferDraw(Color::Black) => {result.push(252)}
-            Action::AcceptDraw => {result.push(251)}
-            Action::DeclareDraw => {result.push(250)}
+            Action::Resign(Color::White) => {
+                result.push(255);
+            }
+            Action::Resign(Color::Black) => {
+                result.push(254);
+            }
+            Action::OfferDraw(Color::White) => result.push(253),
+            Action::OfferDraw(Color::Black) => result.push(252),
+            Action::AcceptDraw => result.push(251),
+            Action::DeclareDraw => result.push(250),
         }
     }
     Ok(result)
@@ -67,15 +72,29 @@ fn decode_game(game: Vec<u8>) -> anyhow::Result<Game> {
     let mut result = Game::new();
     for action in game {
         match action {
-            255 => {result.resign(Color::White);},
-            254 => {result.resign(Color::Black);},
-            253 => {result.offer_draw(Color::White);},
-            252 => {result.offer_draw(Color::Black);},
-            251 => {result.accept_draw();},
-            250 => {result.declare_draw();},
-            n   => {
+            255 => {
+                result.resign(Color::White);
+            }
+            254 => {
+                result.resign(Color::Black);
+            }
+            253 => {
+                result.offer_draw(Color::White);
+            }
+            252 => {
+                result.offer_draw(Color::Black);
+            }
+            251 => {
+                result.accept_draw();
+            }
+            250 => {
+                result.declare_draw();
+            }
+            n => {
                 let mut moves = MoveGen::new_legal(&result.current_position());
-                let next_move = moves.nth(n as usize).ok_or_else(|| anyhow!("Cannot decode game"))?;
+                let next_move = moves
+                    .nth(n as usize)
+                    .ok_or_else(|| anyhow!("Cannot decode game"))?;
                 result.make_move(next_move);
             }
         }
@@ -94,7 +113,7 @@ mod tests {
         game.make_move(ChessMove::new(Square::E2, Square::E4, None));
         game.make_move(ChessMove::new(Square::E7, Square::E5, None));
         let encoded = encode_game(&game).unwrap();
-        assert_eq!(encoded, vec![9,8]);
+        assert_eq!(encoded, vec![9, 8]);
     }
 
     #[test]
@@ -122,5 +141,4 @@ mod tests {
         assert_eq!(game.actions().len(), 4);
         assert!(game.result().is_some());
     }
-
 }
