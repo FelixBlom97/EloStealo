@@ -4,7 +4,7 @@ use crate::filters::movefilter::MoveFilter;
 use crate::filters::moveto::MoveTo;
 use crate::filters::nofilter::NoFilter;
 use crate::filters::openingmove::OpeningMove;
-use chess::{ChessMove, Game, Piece, Square};
+use chess::{ChessMove, Game, Square};
 
 // Select filter based on id and filter the moves. Default is normal chess.
 // Range 1-21 are filters that limit captures.
@@ -13,114 +13,20 @@ use chess::{ChessMove, Game, Piece, Square};
 // Range 45-59 forces a number of opening moves
 pub fn generate_moves(filter_id: i32, game: &Game) -> Vec<ChessMove> {
     match filter_id {
-        59 => OpeningMove::new(vec![
-            ChessMove::new(Square::B1, Square::A3, None),
-            ChessMove::new(Square::B8, Square::A6, None),
-            ChessMove::new(Square::G1, Square::H3, None),
-            ChessMove::new(Square::G8, Square::H6, None),
-        ])
-        .filter_moves(game),
-        58 => OpeningMove::new(vec![
-            ChessMove::new(Square::E2, Square::E4, None),
-            ChessMove::new(Square::E7, Square::E5, None),
-            ChessMove::new(Square::E1, Square::E2, None),
-            ChessMove::new(Square::E8, Square::E7, None),
-            ChessMove::new(Square::E2, Square::E1, None),
-            ChessMove::new(Square::E7, Square::E8, None),
-        ])
-        .filter_moves(game),
-        57 => OpeningMove::new(vec![
-            ChessMove::new(Square::E2, Square::E4, None),
-            ChessMove::new(Square::E7, Square::E5, None),
-            ChessMove::new(Square::E1, Square::E2, None),
-            ChessMove::new(Square::E8, Square::E7, None),
-        ])
-        .filter_moves(game),
-        56 => OpeningMove::new(vec![
-            ChessMove::new(Square::F2, Square::F3, None),
-            ChessMove::new(Square::F7, Square::F6, None),
-            ChessMove::new(Square::G2, Square::G4, None),
-            ChessMove::new(Square::G7, Square::G5, None),
-        ])
-        .filter_moves(game),
-        55 => OpeningMove::new(vec![
-            ChessMove::new(Square::A2, Square::A4, None),
-            ChessMove::new(Square::A7, Square::A5, None),
-            ChessMove::new(Square::A1, Square::A3, None),
-            ChessMove::new(Square::A8, Square::A6, None),
-            ChessMove::new(Square::H2, Square::H4, None),
-            ChessMove::new(Square::H7, Square::H5, None),
-            ChessMove::new(Square::H1, Square::H3, None),
-            ChessMove::new(Square::H8, Square::H6, None),
-        ])
-        .filter_moves(game),
-        54 => OpeningMove::new(vec![
-            ChessMove::new(Square::F2, Square::F3, None),
-            ChessMove::new(Square::F7, Square::F6, None),
-            ChessMove::new(Square::F3, Square::F4, None),
-            ChessMove::new(Square::F6, Square::F5, None),
-        ])
-        .filter_moves(game),
-        53 => OpeningMove::new(vec![
-            ChessMove::new(Square::E2, Square::E4, None),
-            ChessMove::new(Square::E7, Square::E5, None),
-            ChessMove::new(Square::F1, Square::C4, None),
-            ChessMove::new(Square::F8, Square::C5, None),
-            ChessMove::new(Square::D1, Square::H5, None),
-            ChessMove::new(Square::D8, Square::H4, None),
-        ])
-        .filter_moves(game),
-        52 => OpeningMove::new(vec![
-            ChessMove::new(Square::B2, Square::B4, None),
-            ChessMove::new(Square::B7, Square::B5, None),
-            ChessMove::new(Square::B4, Square::B5, None),
-            ChessMove::new(Square::B5, Square::B4, None),
-        ])
-        .filter_moves(game),
-        51 => OpeningMove::new(vec![
-            ChessMove::new(Square::A2, Square::A4, None),
-            ChessMove::new(Square::A7, Square::A5, None),
-            ChessMove::new(Square::A4, Square::A5, None),
-            ChessMove::new(Square::A5, Square::A4, None),
-        ])
-        .filter_moves(game),
-        50 => OpeningMove::new(vec![
-            ChessMove::new(Square::C2, Square::C4, None),
-            ChessMove::new(Square::C7, Square::C5, None),
-            ChessMove::new(Square::D2, Square::D3, None),
-            ChessMove::new(Square::D7, Square::D6, None),
-            ChessMove::new(Square::E2, Square::E4, None),
-            ChessMove::new(Square::E7, Square::E5, None),
-        ])
-        .filter_moves(game),
-        49 => OpeningMove::new(vec![
-            ChessMove::new(Square::A2, Square::A4, None),
-            ChessMove::new(Square::A7, Square::A5, None),
-            ChessMove::new(Square::H2, Square::H4, None),
-            ChessMove::new(Square::H7, Square::H5, None),
-        ])
-        .filter_moves(game),
-        48 => OpeningMove::new(vec![
-            ChessMove::new(Square::D2, Square::D3, None),
-            ChessMove::new(Square::D7, Square::D6, None),
-            ChessMove::new(Square::F2, Square::F3, None),
-            ChessMove::new(Square::F7, Square::F6, None),
-        ])
-        .filter_moves(game),
-        47 => OpeningMove::new(vec![
-            ChessMove::new(Square::B1, Square::C3, None),
-            ChessMove::new(Square::B8, Square::C6, None),
-            ChessMove::new(Square::C3, Square::B1, None),
-            ChessMove::new(Square::C6, Square::B8, None),
-        ])
-        .filter_moves(game),
-        46 => OpeningMove::new(vec![
-            ChessMove::new(Square::G2, Square::G3, None),
-            ChessMove::new(Square::G7, Square::G6, None),
-            ChessMove::new(Square::G3, Square::G4, None),
-            ChessMove::new(Square::G6, Square::G5, None),
-        ])
-        .filter_moves(game),
+        59 => OpeningMove::knights_to_the_edges().filter_moves(game),
+        58 => OpeningMove::bongcloud_and_back().filter_moves(game),
+        57 => OpeningMove::bongcloud().filter_moves(game),
+        56 => OpeningMove::allow_fools_mate().filter_moves(game),
+        55 => OpeningMove::bring_both_rooks_out().filter_moves(game),
+        54 => OpeningMove::move_f_pawn_twice().filter_moves(game),
+        53 => OpeningMove::scholars_mate().filter_moves(game),
+        52 => OpeningMove::rush_b().filter_moves(game),
+        51 => OpeningMove::rush_a().filter_moves(game),
+        50 => OpeningMove::the_cheese_opening().filter_moves(game),
+        49 => OpeningMove::edge_pawns_two_squares().filter_moves(game),
+        48 => OpeningMove::g_and_f_pawn().filter_moves(game),
+        47 => OpeningMove::knight_and_back().filter_moves(game),
+        46 => OpeningMove::two_g_pawn_moves().filter_moves(game),
         45 => MoveTo::cant_play_on_the_c_or_e_or_h_file().filter_moves(game),
         44 => MoveTo::cant_play_on_the_c_or_h_file().filter_moves(game),
         43 => MoveTo::cant_play_on_the_c_or_e_file().filter_moves(game),
