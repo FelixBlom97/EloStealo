@@ -29,7 +29,6 @@ async fn main() -> anyhow::Result<()> {
             "postgres://{}:{}@{}/{}",
             postgres_user, postgres_password, database_url, database_name
         );
-        println!("Connecting to {}", connection_string);
         let db: Box<dyn EloStealoRepository> = EloStealoPostgresStore::new(connection_string).await;
         db.delete_old_stealo_rules().await?;
         for rule in rules_data.rules {

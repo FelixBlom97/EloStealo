@@ -56,7 +56,17 @@ impl EloStealoRepository for EloStealoPostgresStore {
     }
 
     async fn update_game(&self, id: Uuid, game: ChessGame) -> anyhow::Result<()> {
-        todo!()
+        let game_model = chess_game_to_model(&game);
+        sqlx::query!(
+            r#"UPDATE games
+            SET game = $1
+            WHERE id = $2"#,
+            game_model.game,
+            id
+        )
+        .execute(&self.pool)
+        .await?;
+        Ok(())
     }
 
     async fn load_game_info(
