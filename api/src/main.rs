@@ -4,6 +4,7 @@ mod handlers;
 mod session_store;
 mod socket_handlers;
 
+use std::env;
 use crate::configuration::ApplicationSettings;
 use crate::session_store::SessionStore;
 use axum::response::Redirect;
@@ -12,13 +13,14 @@ use axum::{
     Router,
 };
 use env_logger::Env;
-use mongodb::{options::ClientOptions, Client, Database};
 use socketioxide::SocketIo;
 use std::net::SocketAddr;
 use tower_http::services::fs::ServeFile;
 use tower_http::services::ServeDir;
 use tower_sessions::{MemoryStore, SessionManagerLayer};
 use tracing::log;
+use persistence::elo_stealo_postgres::EloStealoPostgresStore;
+use persistence::elo_stealo_repository::EloStealoRepository;
 
 #[tokio::main]
 async fn main() {
@@ -28,13 +30,17 @@ async fn main() {
         .map_err(|e| log::error!("Error while loading settings: {}", e))
         .unwrap();
 
-    let client_options = ClientOptions::parse("Imma change this to postgres")
-        .await
-        .unwrap();
-    let client = Client::with_options(client_options).expect("Failed to connect to database.");
-    let db = client.database("EloStealo");
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "localhost:5433".into());
+    let postgres_user = env::var("POSTGRES_USER").unwrap_or_else(|_| "postgres".into());
+    let postgres_password = env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "postgres".into());
+    let database_name = env::var("DATABASE_NAME").unwrap_or_else(|_| "EloStealo".into());
+    let connection_string = format!(
+        "postgres://{}:{}@{}/{}",
+        postgres_user, postgres_password, database_url, database_name
+    );
 
-    let state = AppState { database: db };
+    let repository: Box<dyn EloStealoRepository> = EloStealoPostgresStore::new(connection_string).await;
+    let state = AppState { repository };
 
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store).with_secure(false);
@@ -71,5 +77,5 @@ async fn main() {
 // Pass the database connection as state to let axum/socketioxide handle the connection lifetimes
 #[derive(Clone)]
 struct AppState {
-    database: Database,
+    repository: Box<dyn EloStealoRepository>,
 }

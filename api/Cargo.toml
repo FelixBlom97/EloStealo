@@ -12,7 +12,6 @@ chess = "3.2.0"
 domain = { path = "../domain" }
 persistence = { path = "../persistence" }
 uuid = { version = "1.8.0", features = ["v4"] }
-mongodb = { version = "2.5.0"}
 tower-sessions = "0.12.2"
 tower-http = { version = "0.5.2", features = ["fs"] }
 axum-macros = "0.4.1"

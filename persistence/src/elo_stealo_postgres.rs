@@ -72,10 +72,16 @@ impl EloStealoRepository for EloStealoPostgresStore {
     async fn load_game_info(
         &self,
         id: Uuid,
-        room_code: String,
         color: String,
-    ) -> anyhow::Result<Option<GameInfo>> {
-        todo!()
+    ) -> anyhow::Result<GameInfo> {
+        let game_model = sqlx::query_as!(
+            GameModel,
+            r#"SELECT white, black, game, elo_white, elo_black, rule_id_white, rule_id_black FROM games
+            WHERE id = $1"#,
+            id
+        ).fetch_one(&self.pool).await?;
+        let chess_game = model_to_chess_game(game_model);
+        Ok(GameInfo::new(chess_game, color))
     }
 
     async fn get_stealo_rules(&self) -> anyhow::Result<Vec<StealoRule>> {

@@ -1,6 +1,7 @@
 #[allow(non_snake_case)]
 use domain::chessgame::ChessGame;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GameDTO {
@@ -27,7 +28,7 @@ pub struct PlayMove {
 
 #[derive(Deserialize)]
 pub struct NewOnlineGame {
-    pub roomcode: String,
+    pub roomcode: Uuid,
     pub player1: String,
     pub player2: String,
     pub elo1: i32,
@@ -38,7 +39,7 @@ pub struct NewOnlineGame {
 
 #[derive(Deserialize)]
 pub struct PlayOnlineMove {
-    pub roomcode: String,
+    pub roomcode: Uuid,
     pub play_move: String,
 }
 
@@ -52,7 +53,7 @@ pub struct WaitingPlayer {
 
 #[derive(Deserialize)]
 pub struct GetInfo {
-    pub roomcode: String,
+    pub roomcode: Uuid,
     pub color: String,
 }
 
