@@ -39,7 +39,7 @@ async fn main() {
         postgres_user, postgres_password, database_url, database_name
     );
 
-    let repository: Box<dyn EloStealoRepository> = EloStealoPostgresStore::new(connection_string).await;
+    let Ok(repository) = EloStealoPostgresStore::new(connection_string).await;
     let state = AppState { repository };
 
     let session_store = MemoryStore::default();
@@ -74,8 +74,7 @@ async fn main() {
         .unwrap()
 }
 
-// Pass the database connection as state to let axum/socketioxide handle the connection lifetimes
 #[derive(Clone)]
 struct AppState {
-    repository: Box<dyn EloStealoRepository>,
+    repository: EloStealoPostgresStore,
 }

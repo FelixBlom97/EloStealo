@@ -1,21 +1,21 @@
+use std::future::Future;
 use crate::game_info::GameInfo;
 use crate::stealo_rule::StealoRule;
 use async_trait::async_trait;
 use domain::chessgame::ChessGame;
 use uuid::Uuid;
 
-#[async_trait]
-pub trait EloStealoRepository {
-    async fn save_game(&self, id: Uuid, new_game: ChessGame) -> anyhow::Result<()>;
-    async fn get_game(&self, id: Uuid) -> anyhow::Result<ChessGame>;
-    async fn update_game(&self, id: Uuid, game: ChessGame) -> anyhow::Result<()>;
-    async fn load_game_info(
+pub trait EloStealoRepository: Send + Sync + Clone + 'static {
+    fn save_game(&self, id: Uuid, new_game: ChessGame) -> impl Future<Output = anyhow::Result<()>> + Send;
+    fn get_game(&self, id: Uuid) -> impl Future<Output = anyhow::Result<ChessGame>> + Send;
+    fn update_game(&self, id: Uuid, game: ChessGame) -> impl Future<Output = anyhow::Result<()>> + Send;
+    fn load_game_info(
         &self,
         id: Uuid,
         color: String,
-    ) -> anyhow::Result<GameInfo>;
+    ) -> impl Future<Output = anyhow::Result<GameInfo>> + Send;
 
-    async fn get_stealo_rules(&self) -> anyhow::Result<Vec<StealoRule>>;
-    async fn insert_stealo_rule(&self, rule: StealoRule) -> anyhow::Result<()>;
-    async fn delete_old_stealo_rules(&self) -> anyhow::Result<()>;
+    fn get_stealo_rules(&self) -> impl Future<Output = anyhow::Result<Vec<StealoRule>>> + Send;
+    fn insert_stealo_rule(&self, rule: StealoRule) -> impl Future<Output = anyhow::Result<()>> + Send;
+    fn delete_old_stealo_rules(&self) -> impl Future<Output = anyhow::Result<()>> + Send;
 }

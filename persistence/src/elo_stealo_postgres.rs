@@ -2,29 +2,27 @@ use crate::elo_stealo_repository::EloStealoRepository;
 use crate::game_info::GameInfo;
 use crate::game_model::{chess_game_to_model, model_to_chess_game, GameModel};
 use crate::stealo_rule::StealoRule;
-use async_trait::async_trait;
 use domain::chessgame::ChessGame;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use uuid::Uuid;
 
+#[derive(Clone, Debug)]
 pub struct EloStealoPostgresStore {
     pool: PgPool,
 }
 
 impl EloStealoPostgresStore {
-    pub async fn new(connection_string: String) -> Box<dyn EloStealoRepository> {
+    pub async fn new(connection_string: String) -> Result<EloStealoPostgresStore, anyhow::Error> {
         let pool = PgPoolOptions::new()
+            .max_connections(8)
             .connect(&connection_string)
             .await
             .expect("Could not connect to postgres");
-        Box::new(EloStealoPostgresStore { pool })
+        Ok(EloStealoPostgresStore { pool })
     }
-}
 
-#[async_trait]
-impl EloStealoRepository for EloStealoPostgresStore {
-    async fn save_game(&self, id: Uuid, new_game: ChessGame) -> anyhow::Result<()> {
+    pub async fn save_game(&self, id: Uuid, new_game: ChessGame) -> anyhow::Result<()> {
         let game_model = chess_game_to_model(&new_game);
         sqlx::query!(
             r#"INSERT INTO games
@@ -43,7 +41,7 @@ impl EloStealoRepository for EloStealoPostgresStore {
         Ok(())
     }
 
-    async fn get_game(&self, id: Uuid) -> anyhow::Result<ChessGame> {
+    pub async fn get_game(&self, id: Uuid) -> anyhow::Result<ChessGame> {
         let game_model = sqlx::query_as!(
             GameModel,
             r#"SELECT white, black, game, elo_white, elo_black, rule_id_white, rule_id_black
@@ -55,7 +53,7 @@ impl EloStealoRepository for EloStealoPostgresStore {
         Ok(chess_game)
     }
 
-    async fn update_game(&self, id: Uuid, game: ChessGame) -> anyhow::Result<()> {
+    pub async fn update_game(&self, id: Uuid, game: ChessGame) -> anyhow::Result<()> {
         let game_model = chess_game_to_model(&game);
         sqlx::query!(
             r#"UPDATE games
@@ -69,7 +67,7 @@ impl EloStealoRepository for EloStealoPostgresStore {
         Ok(())
     }
 
-    async fn load_game_info(
+    pub async fn load_game_info(
         &self,
         id: Uuid,
         color: String,
@@ -84,7 +82,7 @@ impl EloStealoRepository for EloStealoPostgresStore {
         Ok(GameInfo::new(chess_game, color))
     }
 
-    async fn get_stealo_rules(&self) -> anyhow::Result<Vec<StealoRule>> {
+    pub async fn get_stealo_rules(&self) -> anyhow::Result<Vec<StealoRule>> {
         let rules = sqlx::query_as!(
             StealoRule,
             r#"SELECT id, name, elo, description FROM rules"#
@@ -94,7 +92,7 @@ impl EloStealoRepository for EloStealoPostgresStore {
         Ok(rules)
     }
 
-    async fn insert_stealo_rule(&self, rule: StealoRule) -> anyhow::Result<()> {
+    pub async fn insert_stealo_rule(&self, rule: StealoRule) -> anyhow::Result<()> {
         sqlx::query!(
             r#"INSERT INTO rules
             VALUES ($1, $2, $3, $4)"#,
@@ -108,7 +106,7 @@ impl EloStealoRepository for EloStealoPostgresStore {
         Ok(())
     }
 
-    async fn delete_old_stealo_rules(&self) -> anyhow::Result<()> {
+    pub async fn delete_old_stealo_rules(&self) -> anyhow::Result<()> {
         sqlx::query!(r#"DELETE FROM rules"#)
             .execute(&self.pool)
             .await?;
