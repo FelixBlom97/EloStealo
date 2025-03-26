@@ -1,8 +1,10 @@
+use std::str::FromStr;
 use crate::game_dto::{create_game_dto, GameDTO, PlayOnlineMove, WaitingPlayer};
 use crate::AppState;
 use async_timers::PeriodicTimer;
 use socketioxide::extract::{Data, SocketRef, State};
 use std::time::Duration;
+use serde_json::from_str;
 use tracing::log;
 use uuid::Uuid;
 
@@ -15,10 +17,10 @@ pub async fn on_connect(socket: SocketRef) {
 
     socket.on(
         "reconnected",
-        |socket: SocketRef, Data::<Uuid>(room), state: State<AppState>| async move {
+        |socket: SocketRef, Data::<String>(room), state: State<AppState>| async move {
             log::info!("Socket {:?} reconnected to room {:?}", socket.id, &room);
             let _ = socket.join(room.clone());
-            let load_chessgame = state.repository.get_game(room).await;
+            let load_chessgame = state.repository.get_game(Uuid::from_str(&room).unwrap()).await;
             match load_chessgame {
                 Ok(chessgame) => {
                     let game_dto = create_game_dto(&chessgame);
@@ -92,11 +94,11 @@ pub async fn on_connect(socket: SocketRef) {
         "move",
         |socket: SocketRef, Data::<PlayOnlineMove>(play_move), state: State<AppState>| async move {
             let room = play_move.roomcode;
-            let load_chessgame = state.repository.get_game(room).await;
+            let load_chessgame = state.repository.get_game(Uuid::from_str(&room).unwrap()).await;
             match load_chessgame {
                 Ok(mut chessgame) => {
                     chessgame.make_move(play_move.play_move, None);
-                    match state.repository.update(room, &chessgame).await {
+                    match state.repository.update_game(Uuid::from_str(&room).unwrap(), &chessgame).await {
                         Ok(()) => {
                             let game_dto = create_game_dto(&chessgame);
                             let _ = socket.within(room).emit("sync", game_dto);

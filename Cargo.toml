@@ -4,8 +4,4 @@ members = [
     "domain",
     "api",
     "persistence",
-    "migrations",
 ]
-
-[workspace.metadata]
-default-run = "api"

@@ -2,7 +2,7 @@ import {useState, useEffect, useContext} from "react";
 import {Chessboard} from "react-chessboard";
 import {useGameContext} from "../GameContextProvider.tsx";
 import {get_game_info} from "../api.ts";
-import {isGameState, GameInfoType, OnlineMove, isGameInfoType} from "../types.ts";
+import {isGameState, GameInfoType, OnlineMove, isGameInfoType, Color} from "../types.ts";
 import {Piece, Square} from "react-chessboard/dist/chessboard/types";
 import {format_promotion_piece} from "../shared_functions.ts";
 import {SocketContext} from "../SocketContext.tsx";
@@ -60,9 +60,10 @@ export const Play = () => {
     }
 
     function is_piece_a_pawn(piece: Piece) {
-        if (piece == 'wP' || piece == 'bP') { drag_pawn = true}
-        else { drag_pawn = false}
+        drag_pawn = piece == 'wP' || piece == 'bP';
     }
+
+    function filler_play_move(_move: string, _color: Color) {}
 
     // Dependency on result to request game info again once the game is finished.
     // Server send full game info on a finished game and partial info on an ongoing one.
@@ -104,7 +105,7 @@ export const Play = () => {
                 <div className="w-1/3">
                     <GameInfoOnline player1={player1} player2={player2}
                               elo1={elo1} elo2={elo2}
-                              stealo1={stealo1} stealo2={stealo2} result={result}
+                              stealo1={stealo1} stealo2={stealo2} result={result} play_move={filler_play_move}
                     />
                 </div>
             </div>
@@ -132,7 +133,7 @@ export const Play = () => {
                     <div className="w-1/3">
                         <GameInfoOnline player1={player1} player2={player2}
                                   elo1={elo1} elo2={elo2}
-                                  stealo1={stealo1} stealo2={stealo2} result={result}/>
+                                  stealo1={stealo1} stealo2={stealo2} result={result} play_move={filler_play_move}/>
                     </div>
                 </div>
             </div>

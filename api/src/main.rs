@@ -39,7 +39,7 @@ async fn main() {
         postgres_user, postgres_password, database_url, database_name
     );
 
-    let Ok(repository) = EloStealoPostgresStore::new(connection_string).await;
+    let repository = EloStealoPostgresStore::new(connection_string).await.expect("Failed to create EloStealoPostgresStore");
     let state = AppState { repository };
 
     let session_store = MemoryStore::default();

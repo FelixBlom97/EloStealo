@@ -28,7 +28,7 @@ pub struct PlayMove {
 
 #[derive(Deserialize)]
 pub struct NewOnlineGame {
-    pub roomcode: Uuid,
+    pub roomcode: String,
     pub player1: String,
     pub player2: String,
     pub elo1: i32,
@@ -39,7 +39,7 @@ pub struct NewOnlineGame {
 
 #[derive(Deserialize)]
 pub struct PlayOnlineMove {
-    pub roomcode: Uuid,
+    pub roomcode: String,
     pub play_move: String,
 }
 
@@ -53,7 +53,7 @@ pub struct WaitingPlayer {
 
 #[derive(Deserialize)]
 pub struct GetInfo {
-    pub roomcode: Uuid,
+    pub roomcode: String,
     pub color: String,
 }
 

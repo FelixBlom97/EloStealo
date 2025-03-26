@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use crate::game_dto::{
     create_game_dto, GameDTO, GameInfoLocal, GetInfo, NewLocalGame, NewOnlineGame, PlayMove,
 };
@@ -50,7 +51,7 @@ pub async fn play(
         .await
         .map_err(|_e| return StatusCode::INTERNAL_SERVER_ERROR)?;
     chess_game.make_move(play_move.play_move, play_move.color);
-    match state.repository.update_game(id, chess_game).await {
+    match state.repository.update_game(id, &chess_game).await {
         Ok(()) => {
             let game_dto = create_game_dto(&chess_game);
             Ok(Json(game_dto))
@@ -104,7 +105,7 @@ pub async fn start_online(
     let stealo2 = new_game.stealo2;
     let new_game = domain::chessgame::new_game(p1, p2, elo1, elo2, stealo1, stealo2);
     let game_dto = create_game_dto(&new_game);
-    match state.repository.save_game(id, new_game).await {
+    match state.repository.save_game(Uuid::from_str(&id).unwrap(), new_game).await {
         Ok(()) => Ok(Json(game_dto)),
         Err(_e) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
@@ -114,7 +115,7 @@ pub async fn get_game_info(
     State(state): State<AppState>,
     Json(get_rule): Json<GetInfo>,
 ) -> Result<Json<GameInfo>, StatusCode> {
-    let game_info = state.repository.load_game_info(get_rule.roomcode, get_rule.color).await;
+    let game_info = state.repository.load_game_info(Uuid::from_str(&get_rule.roomcode).unwrap(), get_rule.color).await;
     match game_info {
         Ok(info) => Ok(Json(info)),
         Err(e) => {

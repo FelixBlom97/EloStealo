@@ -19,6 +19,7 @@ impl EloStealoPostgresStore {
             .connect(&connection_string)
             .await
             .expect("Could not connect to postgres");
+        sqlx::migrate!("../migrations").run(&pool).await?;
         Ok(EloStealoPostgresStore { pool })
     }
 
@@ -45,7 +46,8 @@ impl EloStealoPostgresStore {
         let game_model = sqlx::query_as!(
             GameModel,
             r#"SELECT white, black, game, elo_white, elo_black, rule_id_white, rule_id_black
-            FROM games WHERE id = id"#
+            FROM games WHERE id = $1"#,
+            id
         )
         .fetch_one(&self.pool)
         .await?;
@@ -53,8 +55,8 @@ impl EloStealoPostgresStore {
         Ok(chess_game)
     }
 
-    pub async fn update_game(&self, id: Uuid, game: ChessGame) -> anyhow::Result<()> {
-        let game_model = chess_game_to_model(&game);
+    pub async fn update_game(&self, id: Uuid, game: &ChessGame) -> anyhow::Result<()> {
+        let game_model = chess_game_to_model(game);
         sqlx::query!(
             r#"UPDATE games
             SET game = $1
