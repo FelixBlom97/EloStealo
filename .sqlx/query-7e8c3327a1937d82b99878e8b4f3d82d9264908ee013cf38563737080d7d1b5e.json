@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT white, black, game, elo_white, elo_black, rule_id_white, rule_id_black\n            FROM games WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "white",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "black",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "game",
+        "type_info": "Bytea"
+      },
+      {
+        "ordinal": 3,
+        "name": "elo_white",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "elo_black",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "rule_id_white",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "rule_id_black",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "7e8c3327a1937d82b99878e8b4f3d82d9264908ee013cf38563737080d7d1b5e"
+}

@@ -1,12 +1,10 @@
 mod configuration;
 mod game_dto;
 mod handlers;
-mod session_store;
 mod socket_handlers;
 
 use std::env;
 use crate::configuration::ApplicationSettings;
-use crate::session_store::SessionStore;
 use axum::response::Redirect;
 use axum::{
     routing::{get, post},
@@ -20,7 +18,6 @@ use tower_http::services::ServeDir;
 use tower_sessions::{MemoryStore, SessionManagerLayer};
 use tracing::log;
 use persistence::elo_stealo_postgres::EloStealoPostgresStore;
-use persistence::elo_stealo_repository::EloStealoRepository;
 
 #[tokio::main]
 async fn main() {
@@ -46,7 +43,6 @@ async fn main() {
     let session_layer = SessionManagerLayer::new(session_store).with_secure(false);
     let (socket_layer, io) = SocketIo::builder()
         .with_state(state.clone())
-        .with_state(SessionStore::default())
         .build_layer();
     io.ns("/api/socket", socket_handlers::on_connect);
 

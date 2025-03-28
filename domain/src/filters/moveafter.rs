@@ -7,10 +7,6 @@ pub struct MoveAfter {
 }
 
 impl MoveAfter {
-    pub fn new(piece: Piece, turn: u16) -> MoveAfter {
-        MoveAfter { piece, turn }
-    }
-
     pub fn queen_cant_move_after_12() -> Self {
         Self {
             piece: Piece::Queen,

@@ -1,7 +1,6 @@
 #[allow(non_snake_case)]
 use domain::chessgame::ChessGame;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GameDTO {

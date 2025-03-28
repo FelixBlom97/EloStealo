@@ -9,12 +9,6 @@ pub struct MoveTo {
 }
 
 impl MoveTo {
-    pub fn new(square_numbers: Vec<u8>, piece: Vec<Piece>) -> MoveTo {
-        MoveTo {
-            square_indexes: square_numbers,
-            pieces: piece,
-        }
-    }
 
     pub fn rooks_can_only_move_to_the_edges() -> Self {
         Self {

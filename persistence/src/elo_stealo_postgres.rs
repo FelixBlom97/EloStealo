@@ -1,4 +1,3 @@
-use crate::elo_stealo_repository::EloStealoRepository;
 use crate::game_info::GameInfo;
 use crate::game_model::{chess_game_to_model, model_to_chess_game, GameModel};
 use crate::stealo_rule::StealoRule;
@@ -19,7 +18,8 @@ impl EloStealoPostgresStore {
             .connect(&connection_string)
             .await
             .expect("Could not connect to postgres");
-        sqlx::migrate!("../migrations").run(&pool).await?;
+        println!("Hello, we have reached here!");
+        sqlx::migrate!("./migrations").run(&pool).await?;
         Ok(EloStealoPostgresStore { pool })
     }
 

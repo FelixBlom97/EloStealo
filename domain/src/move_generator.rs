@@ -4,7 +4,7 @@ use crate::filters::movefilter::MoveFilter;
 use crate::filters::moveto::MoveTo;
 use crate::filters::nofilter::NoFilter;
 use crate::filters::openingmove::OpeningMove;
-use chess::{ChessMove, Game, Square};
+use chess::{ChessMove, Game};
 
 // Select filter based on id and filter the moves. Default is normal chess.
 // Range 1-21 are filters that limit captures.

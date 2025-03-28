@@ -4,7 +4,6 @@ use crate::AppState;
 use async_timers::PeriodicTimer;
 use socketioxide::extract::{Data, SocketRef, State};
 use std::time::Duration;
-use serde_json::from_str;
 use tracing::log;
 use uuid::Uuid;
 

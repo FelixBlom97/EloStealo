@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use chess::{Action, Board, ChessMove, Color, Game, MoveGen, Piece, Square};
+use chess::{Action, Board, Color, Game, MoveGen};
 use domain::chessgame::ChessGame;
 use serde::{Deserialize, Serialize};
 
