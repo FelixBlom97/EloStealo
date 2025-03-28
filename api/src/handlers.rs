@@ -19,6 +19,7 @@ pub async fn start_game(
     session: Session,
     Json(new_game): Json<NewLocalGame>,
 ) -> Result<Json<GameDTO>, StatusCode> {
+    println!("{:?}", session.id());
     let p1 = new_game.player1;
     let p2 = new_game.player2;
     let elo1 = new_game.elo1;

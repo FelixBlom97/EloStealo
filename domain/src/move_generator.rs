@@ -80,6 +80,7 @@ pub fn generate_moves(filter_id: i32, game: &Game) -> Vec<ChessMove> {
 mod tests {
     use super::*;
     use std::str::FromStr;
+    use chess::Square;
 
     #[test]
     fn no_filter_test() {

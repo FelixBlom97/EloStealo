@@ -177,7 +177,7 @@ mod tests {
     #[test]
     fn forbidden_a_pawn() {
         let game = Game::new();
-        let a_filter = MoveTo::new((24..32).collect(), vec![Piece::Pawn]);
-        assert_eq!(12, a_filter.filter_moves(&game).len());
+        let c_filter = MoveTo::cant_play_on_the_c_file();
+        assert_eq!(17, c_filter.filter_moves(&game).len());
     }
 }
