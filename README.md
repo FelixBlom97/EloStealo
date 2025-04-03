@@ -1,4 +1,6 @@
-# IP
+# Hosted at [elostealo.felixblom.com](elostealo.felixblom.com)
+
+# EloStealo
 Chess can be fun to play with friends, but, due to the massive depth and many levels to the game, one player often ends up completely stomping the other when playing casually.
 To level the playing field, me and my much weaker friend often play with [Elo Stealo](https://elostealo.com) rules.
 Elo Stealo rules are handicaps of variable difficulty, unknown to your opponent, that you'll have to play around.
