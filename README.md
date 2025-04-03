@@ -1,4 +1,4 @@
-# Hosted at [elostealo.felixblom.com](elostealo.felixblom.com)
+# Hosted at [elostealo.felixblom.com](https://elostealo.felixblom.com)
 
 # EloStealo
 Chess can be fun to play with friends, but, due to the massive depth and many levels to the game, one player often ends up completely stomping the other when playing casually.
