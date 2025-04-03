@@ -2,6 +2,7 @@ mod configuration;
 mod game_dto;
 mod handlers;
 mod socket_handlers;
+mod ws_handlers;
 
 use std::env;
 use crate::configuration::ApplicationSettings;
@@ -13,11 +14,16 @@ use axum::{
 use env_logger::Env;
 use socketioxide::SocketIo;
 use std::net::SocketAddr;
+use std::sync::Arc;
+use dashmap::DashMap;
+use tokio::sync::broadcast;
 use tower_http::services::fs::ServeFile;
 use tower_http::services::ServeDir;
 use tower_sessions::{MemoryStore, SessionManagerLayer};
 use tracing::log;
 use persistence::elo_stealo_postgres::EloStealoPostgresStore;
+
+type SocketChannelMap = Arc<DashMap<String, broadcast::Sender<String>>>;
 
 #[tokio::main]
 async fn main() {
@@ -37,7 +43,8 @@ async fn main() {
     );
 
     let repository = EloStealoPostgresStore::new(connection_string).await.expect("Failed to create EloStealoPostgresStore");
-    let state = AppState { repository };
+    let channels = SocketChannelMap::new(DashMap::new());
+    let state = AppState { repository, channels };
 
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store).with_secure(false);
@@ -58,8 +65,9 @@ async fn main() {
         .route("/api/start_online", post(handlers::start_online))
         .route("/api/get_game_info", post(handlers::get_game_info))
         .route("/api/get_local_info", get(handlers::get_local_info))
+        .route("/api/ws/new_sockets/:game_id", get(ws_handlers::ws_handler))
         .layer(session_layer)
-        .layer(socket_layer)
+        //.layer(socket_layer)
         .with_state(state);
 
     let addr = SocketAddr::from((settings.host, settings.port));
@@ -73,4 +81,5 @@ async fn main() {
 #[derive(Clone)]
 struct AppState {
     repository: EloStealoPostgresStore,
+    channels: SocketChannelMap
 }

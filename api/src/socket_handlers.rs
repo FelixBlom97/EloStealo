@@ -32,7 +32,6 @@ pub async fn on_connect(socket: SocketRef) {
         },
     );
 
-    // Split up create and join room
     socket.on(
         "create_room",
         |socket: SocketRef, Data::<WaitingPlayer>(player)| async move {

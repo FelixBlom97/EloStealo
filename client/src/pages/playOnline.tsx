@@ -6,7 +6,7 @@ import {isGameState, GameInfoType, OnlineMove, isGameInfoType, Color} from "../t
 import {Piece, Square} from "react-chessboard/dist/chessboard/types";
 import {format_promotion_piece} from "../shared_functions.ts";
 import {SocketContext} from "../SocketContext.tsx";
-import {GameInfoOnline} from "../layouts/GameInfo.tsx";
+import {GameInfoOnline} from "../components/GameInfo.tsx";
 
 export const Play = () => {
     const websocket = useContext(SocketContext);

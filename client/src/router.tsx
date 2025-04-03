@@ -1,9 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
-import { RootLayout } from "./layouts/RootLayout";
+import { RootLayout } from "./components/RootLayout";
 import { LocalGame } from "./pages/LocalGame.tsx"
 import { OnlineGame } from "./pages/OnlineGame.tsx";
 /*import { ErrorPage } from "./pages/ErrorPage";*/
 import { About } from "./pages/About";
+import TestGameOnline from "./components/TestGameOnline.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -22,6 +23,10 @@ export const router = createBrowserRouter([
             {
                 path: "about",
                 element: <About />
+            },
+            {
+                path: "ws-test/:gameId",
+                element: <TestGameOnline />
             }
         ]
     }

@@ -1,6 +1,6 @@
 import {useGameContext} from "../GameContextProvider.tsx";
-import {FormInput} from "../layouts/FormInput.tsx";
-import {StealoInput} from "../layouts/StealoInput.tsx";
+import {FormInput} from "../components/FormInput.tsx";
+import {StealoInput} from "../components/StealoInput.tsx";
 import {useContext, useEffect, useState} from "react";
 import {GameState, isGameState, StealoRule} from "../types.ts";
 import {get_stealo_rules, start_online} from "../api.ts";

@@ -5,7 +5,7 @@ import {get_local_game_info, play} from "../api"
 import {isGameState, isGameInfoType, GameInfoType, Color} from "../types.ts";
 import {format_promotion_piece} from "../shared_functions.ts";
 import {useEffect, useState} from "react";
-import {GameInfo} from "../layouts/GameInfo.tsx";
+import {GameInfo} from "../components/GameInfo.tsx";
 
 export const Play = () => {
     const {gameState, setGameState} = useGameContext();

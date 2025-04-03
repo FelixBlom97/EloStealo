@@ -9,9 +9,7 @@ import {socket, SocketContext} from "./SocketContext.tsx";
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <GameContextProvider>
-        <SocketContext.Provider value={socket}>
-            <RouterProvider router={router} />
-        </SocketContext.Provider>
+        <RouterProvider router={router} />
     </GameContextProvider>
   </React.StrictMode>,
 )

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {useGameContext} from "../GameContextProvider.tsx";
 import { StealoRule, isGameState } from "../types";
-import { FormInput } from "../layouts/FormInput";
+import { FormInput } from "../components/FormInput";
 import {startGame, get_stealo_rules} from "../api";
-import { StealoInput } from "../layouts/StealoInput";
+import { StealoInput } from "../components/StealoInput";
 import {random_stealo} from "../shared_functions.ts";
 
 

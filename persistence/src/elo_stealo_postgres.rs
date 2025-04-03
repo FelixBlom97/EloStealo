@@ -18,7 +18,6 @@ impl EloStealoPostgresStore {
             .connect(&connection_string)
             .await
             .expect("Could not connect to postgres");
-        println!("Hello, we have reached here!");
         sqlx::migrate!("./migrations").run(&pool).await?;
         Ok(EloStealoPostgresStore { pool })
     }
