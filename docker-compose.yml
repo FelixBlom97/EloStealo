@@ -11,32 +11,43 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ./init-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5433:5432"
+      - "5432:5432"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5432" ]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 5s
       retries: 5
       start_period: 5s
 
-  app:
+  api:
     build:
       context: .
-      dockerfile: Dockerfile-dev
+      dockerfile: Dockerfile
+      target: builder
     ports:
       - "8080:8080"
     volumes:
-      - ./api:/api
-      - ./client:/client
-      - ./domain:/domain
-      - ./persistence:/persistence
-      - ./target:/target
+      - .:/app
+      - /app/target
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/EloStealo
+      - CONFIG=docker
     depends_on:
       postgres:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgres:5432
-      SQLX_OFFLINE: true
+    command: cargo watch -x 'run --bin api'
 
+  client:
+    image: node:20
+    working_dir: /client
+    volumes:
+      - ./client:/client
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - client/.env.docker
 
 volumes:
   postgres-data:

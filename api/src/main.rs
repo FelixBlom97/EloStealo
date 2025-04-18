@@ -27,16 +27,10 @@ async fn main() {
         .map_err(|e| log::error!("Error while loading settings: {}", e))
         .unwrap();
 
-    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "localhost:5433".into());
-    let postgres_user = env::var("POSTGRES_USER").unwrap_or_else(|_| "postgres".into());
-    let postgres_password = env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "postgres".into());
-    let database_name = env::var("DATABASE_NAME").unwrap_or_else(|_| "EloStealo".into());
-    let connection_string = format!(
-        "postgres://{}:{}@{}/{}",
-        postgres_user, postgres_password, database_url, database_name
-    );
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(
+        |_| "postgres://postgres:postgres@localhost:5432/EloStealo".into());
 
-    let repository = EloStealoPostgresStore::new(connection_string).await.expect("Failed to create EloStealoPostgresStore");
+    let repository = EloStealoPostgresStore::new(database_url).await.expect("Failed to create EloStealoPostgresStore");
     let state = AppState { repository };
 
     let session_store = MemoryStore::default();
