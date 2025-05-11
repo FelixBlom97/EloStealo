@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use crate::game_dto::{
     create_game_dto, GameDTO, GameInfoLocal, GetInfo, NewLocalGame, NewOnlineGame, PlayMove,
 };
@@ -9,7 +8,7 @@ use axum::Json;
 use domain::chessgame::ChessGame;
 use tower_sessions::Session;
 use tracing::log;
-use uuid::Uuid;
+use persistence::game_id::GameId;
 use persistence::game_info::GameInfo;
 use persistence::stealo_rule::StealoRule;
 
@@ -19,15 +18,14 @@ pub async fn start_game(
     session: Session,
     Json(new_game): Json<NewLocalGame>,
 ) -> Result<Json<GameDTO>, StatusCode> {
-    println!("{:?}", session.id());
     let p1 = new_game.player1;
     let p2 = new_game.player2;
     let elo1 = new_game.elo1;
     let elo2 = new_game.elo2;
     let stealo1 = new_game.stealo1;
     let stealo2 = new_game.stealo2;
-    let id = Uuid::now_v7();
-    session.insert("gameId", id.to_string()).await.unwrap();
+    let id = GameId::new();
+    session.insert("gameId", id.as_str()).await.unwrap();
     let new_game = domain::chessgame::new_game(p1, p2, elo1, elo2, stealo1, stealo2);
     let game_dto = create_game_dto(&new_game);
     match state.repository.save_game(id, new_game).await {
@@ -41,14 +39,14 @@ pub async fn play(
     session: Session,
     Json(play_move): Json<PlayMove>,
 ) -> Result<Json<GameDTO>, StatusCode> {
-    let id = match session.get("gameId").await.unwrap() {
+    let id: GameId = match session.get("gameId").await.unwrap() {
         Some(id) => id,
         None => {
             log::error!("No gameId set for session");
             return Err(StatusCode::BAD_REQUEST);
         }
     };
-    let mut chess_game: ChessGame = state.repository.get_game(id)
+    let mut chess_game: ChessGame = state.repository.get_game(id.clone())
         .await
         .map_err(|_e| return StatusCode::INTERNAL_SERVER_ERROR)?;
     chess_game.make_move(play_move.play_move, play_move.color);
@@ -65,7 +63,7 @@ pub async fn get_local_info(
     State(state): State<AppState>,
     session: Session,
 ) -> Result<Json<GameInfoLocal>, StatusCode> {
-    let id: Uuid = match session.get("gameId").await.unwrap() {
+    let id: GameId = match session.get("gameId").await.unwrap().into() {
         Some(id) => id,
         None => {
             log::error!("No gameId set for session");
@@ -106,7 +104,7 @@ pub async fn start_online(
     let stealo2 = new_game.stealo2;
     let new_game = domain::chessgame::new_game(p1, p2, elo1, elo2, stealo1, stealo2);
     let game_dto = create_game_dto(&new_game);
-    match state.repository.save_game(Uuid::from_str(&id).unwrap(), new_game).await {
+    match state.repository.save_game(GameId::from(id), new_game).await {
         Ok(()) => Ok(Json(game_dto)),
         Err(_e) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
@@ -116,7 +114,7 @@ pub async fn get_game_info(
     State(state): State<AppState>,
     Json(get_rule): Json<GetInfo>,
 ) -> Result<Json<GameInfo>, StatusCode> {
-    let game_info = state.repository.load_game_info(Uuid::from_str(&get_rule.roomcode).unwrap(), get_rule.color).await;
+    let game_info = state.repository.load_game_info(GameId::from(get_rule.roomcode), get_rule.color).await;
     match game_info {
         Ok(info) => Ok(Json(info)),
         Err(e) => {

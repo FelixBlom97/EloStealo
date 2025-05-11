@@ -4,7 +4,7 @@ use crate::stealo_rule::StealoRule;
 use domain::chessgame::ChessGame;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
-use uuid::Uuid;
+use crate::game_id::GameId;
 
 #[derive(Clone, Debug)]
 pub struct EloStealoPostgresStore {
@@ -18,17 +18,16 @@ impl EloStealoPostgresStore {
             .connect(&connection_string)
             .await
             .expect("Could not connect to postgres");
-        println!("Hello, we have reached here!");
         sqlx::migrate!("./migrations").run(&pool).await?;
         Ok(EloStealoPostgresStore { pool })
     }
 
-    pub async fn save_game(&self, id: Uuid, new_game: ChessGame) -> anyhow::Result<()> {
+    pub async fn save_game(&self, id: GameId, new_game: ChessGame) -> anyhow::Result<()> {
         let game_model = chess_game_to_model(&new_game);
         sqlx::query!(
             r#"INSERT INTO games
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"#,
-            id,
+            id.as_str(),
             game_model.game,
             game_model.white,
             game_model.black,
@@ -42,12 +41,12 @@ impl EloStealoPostgresStore {
         Ok(())
     }
 
-    pub async fn get_game(&self, id: Uuid) -> anyhow::Result<ChessGame> {
+    pub async fn get_game(&self, id: GameId) -> anyhow::Result<ChessGame> {
         let game_model = sqlx::query_as!(
             GameModel,
             r#"SELECT white, black, game, elo_white, elo_black, rule_id_white, rule_id_black
             FROM games WHERE id = $1"#,
-            id
+            id.as_str()
         )
         .fetch_one(&self.pool)
         .await?;
@@ -55,14 +54,14 @@ impl EloStealoPostgresStore {
         Ok(chess_game)
     }
 
-    pub async fn update_game(&self, id: Uuid, game: &ChessGame) -> anyhow::Result<()> {
+    pub async fn update_game(&self, id: GameId, game: &ChessGame) -> anyhow::Result<()> {
         let game_model = chess_game_to_model(game);
         sqlx::query!(
             r#"UPDATE games
             SET game = $1
             WHERE id = $2"#,
             game_model.game,
-            id
+            id.as_str()
         )
         .execute(&self.pool)
         .await?;
@@ -71,14 +70,14 @@ impl EloStealoPostgresStore {
 
     pub async fn load_game_info(
         &self,
-        id: Uuid,
+        id: GameId,
         color: String,
     ) -> anyhow::Result<GameInfo> {
         let game_model = sqlx::query_as!(
             GameModel,
             r#"SELECT white, black, game, elo_white, elo_black, rule_id_white, rule_id_black FROM games
             WHERE id = $1"#,
-            id
+            id.as_str()
         ).fetch_one(&self.pool).await?;
         let chess_game = model_to_chess_game(game_model);
         Ok(GameInfo::new(chess_game, color))
@@ -105,13 +104,6 @@ impl EloStealoPostgresStore {
         )
         .execute(&self.pool)
         .await?;
-        Ok(())
-    }
-
-    pub async fn delete_old_stealo_rules(&self) -> anyhow::Result<()> {
-        sqlx::query!(r#"DELETE FROM rules"#)
-            .execute(&self.pool)
-            .await?;
         Ok(())
     }
 }

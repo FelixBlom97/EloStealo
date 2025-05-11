@@ -2,6 +2,9 @@ mod configuration;
 mod game_dto;
 mod handlers;
 mod socket_handlers;
+mod socket_handler;
+mod game_cache;
+mod game_room;
 
 use std::env;
 use crate::configuration::ApplicationSettings;
@@ -18,6 +21,7 @@ use tower_http::services::ServeDir;
 use tower_sessions::{MemoryStore, SessionManagerLayer};
 use tracing::log;
 use persistence::elo_stealo_postgres::EloStealoPostgresStore;
+use crate::game_cache::GameCache;
 
 #[tokio::main]
 async fn main() {
@@ -31,7 +35,8 @@ async fn main() {
         |_| "postgres://postgres:postgres@localhost:5432/EloStealo".into());
 
     let repository = EloStealoPostgresStore::new(database_url).await.expect("Failed to create EloStealoPostgresStore");
-    let state = AppState { repository };
+    let cache = GameCache::new(1000);
+    let state = AppState { repository, cache };
 
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store).with_secure(false);
@@ -67,4 +72,5 @@ async fn main() {
 #[derive(Clone)]
 struct AppState {
     repository: EloStealoPostgresStore,
+    cache: GameCache,
 }
