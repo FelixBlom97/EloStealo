@@ -1,12 +1,11 @@
 use std::sync::Arc;
 use moka::future::{Cache};
 use moka::policy::EvictionPolicy;
-use tokio::sync::broadcast::{Receiver, Sender};
 use tracing::log;
 use crate::game_room::GameRoom;
 
 #[derive(Clone)]
-pub struct GameCache(Cache<String, Arc<GameRoom>>);
+pub struct GameCache(Cache<String, GameRoom>);
 
 impl GameCache {
     pub fn new(capacity: u64) -> Self {
@@ -24,17 +23,12 @@ impl GameCache {
         Self(cache)
     }
 
-    pub async fn get_or_create_transceivers(&self, room_id: &str) -> (Sender<String>, Receiver<String>) {
+    pub async fn get_or_create_channel_and_game(&self, room_id: &str) -> GameRoom {
         let game_room = self.0.get_with(
             room_id.to_string(),
-            async { Arc::new(GameRoom::new(room_id.to_string())) },
+            async { GameRoom::new(room_id.to_string()) },
         ).await;
-        let tx = game_room.tx.clone();
-        let rx = game_room.tx.subscribe();
-        (tx, rx)
+        game_room
     }
 
-    pub async fn get(&self, id: &String) -> Option<Arc<GameRoom>> {
-        self.0.get(id).await
-    }
 }

@@ -57,6 +57,7 @@ async fn main() {
         .route("/api/start_online", post(handlers::start_online))
         .route("/api/get_game_info", post(handlers::get_game_info))
         .route("/api/get_local_info", get(handlers::get_local_info))
+        .route("/ws/:room_id", get(socket_handler::websocket_handler))
         .layer(session_layer)
         .layer(socket_layer)
         .with_state(state);
