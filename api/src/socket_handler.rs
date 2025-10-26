@@ -21,7 +21,7 @@ pub async fn websocket_handler(
 
     // Ensure the room exists before upgrading the websocket.
     let room_id = GameId::try_from(room_id).map_err(|_| StatusCode::BAD_REQUEST)?;
-    let game_room = state.game_store.try_get(room_id).await
+    let game_room = state.game_store.try_get_game(room_id).await
         .map_err(|_| StatusCode::BAD_REQUEST)?;
 
     let user_uuid: Uuid = get_or_create_user_uuid(session)

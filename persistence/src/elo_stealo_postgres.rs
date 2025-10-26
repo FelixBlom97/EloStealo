@@ -65,29 +65,18 @@ impl EloStealoPostgresStore {
         Ok(())
     }
 
-    pub async fn update_or_create_game(&self, id: GameId, game: &ChessGame) -> anyhow::Result<()> {
-        let game_model = chess_game_to_model(game);
+    pub async fn update_game_from_model(&self, id: GameId, game_model: GameModel) -> anyhow::Result<()> {
         sqlx::query!(
-            r#"
-            INSERT INTO games (id, game, white, black, white_id, black_id, elo_white, elo_black, rule_id_white, rule_id_black)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-            ON CONFLICT (id) DO UPDATE
-            SET game = EXCLUDED.game
-            "#,
-            id.as_str(),
+            r#"UPDATE games
+            SET game = $1
+            WHERE id = $2"#,
             game_model.game,
-            game_model.white,
-            game_model.black,
-            game_model.white_id,
-            game_model.black_id,
-            game_model.elo_white,
-            game_model.elo_black,
-            game_model.rule_id_white,
-            game_model.rule_id_black,
-        ).execute(&self.pool).await?;
+            id.as_str()
+        )
+        .execute(&self.pool)
+        .await?;
         Ok(())
     }
-
 
     pub async fn get_stealo_rules(&self) -> anyhow::Result<Vec<StealoRule>> {
         let rules = sqlx::query_as!(

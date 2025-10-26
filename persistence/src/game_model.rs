@@ -5,10 +5,10 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 pub struct GameModel {
-    pub white: String,
-    pub black: String,
-    pub white_id: Uuid,
-    pub black_id: Uuid,
+    pub white: Option<String>,
+    pub black: Option<String>,
+    pub white_id: Option<Uuid>,
+    pub black_id: Option<Uuid>,
     pub game: Vec<u8>,
     pub elo_white: i32,
     pub elo_black: i32,

@@ -57,11 +57,9 @@ async fn main() {
         .nest_service("/", client)
         .route("/online", get(|| async { Redirect::permanent("/") }))
         .route("/about", get(|| async { Redirect::permanent("/") }))
-        .route("/api/startgame", post(handler::start_local_game))
-        .route("/api/play", post(handlers::play))
-        .route("/api/rules", get(handlers::stealo_rules))
-        .route("/api/get_local_info", get(handlers::get_local_info))
-        .route("/ws/:room_id", get(socket_handler::websocket_handler))
+        //.route("/api/startgame", post(handler::start_local_game))
+        .route("/api/rules", get(handler::stealo_rules))
+        //.route("/ws/:room_id", get(socket_handler::websocket_handler))
         .layer(session_layer)
         .with_state(state);
 

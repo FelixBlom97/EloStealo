@@ -20,8 +20,10 @@ impl GameRoom {
 
     pub async fn make_move(&self, chess_move: String, user_uuid: &Uuid) {
         let mut game_guard = self.game.lock().await;
-        if user_uuid == game_guard.get_uuid_with_turn() {
-            game_guard.make_move_new(chess_move);
+        if let Some(turn_uuid) = game_guard.get_uuid_with_turn() {
+            if user_uuid == turn_uuid {
+                game_guard.make_move_new(chess_move);
+            }
         }
         let game_state = GameDTO::new(&game_guard);
         drop(game_guard);
@@ -40,5 +42,9 @@ impl GameRoom {
         let game_info = GameInfoDTO::new(&game_guard, user_uuid);
         drop(game_guard);
         serde_json::to_string(&game_info).unwrap()
+    }
+
+    pub fn get_game(&self) -> Arc<Mutex<ChessGame>> {
+        Arc::clone(&self.game)
     }
 }

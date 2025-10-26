@@ -7,6 +7,7 @@ use tracing::log;
 use persistence::game_id::GameId;
 use uuid::Uuid;
 use domain::chessgame::ChessGame;
+use persistence::stealo_rule::StealoRule;
 use crate::AppState;
 use crate::DTOs::game_info_dto::GameInfoDTO;
 use crate::DTOs::new_game_dto::{NewLocalGameDTO, NewOnlineGameDTO};
@@ -21,23 +22,21 @@ pub async fn start_local_game(
     let user_uuid: Uuid = get_or_create_user_uuid(session)
         .map_err(|_| return StatusCode::INTERNAL_SERVER_ERROR)
         .await?;
-    let p1 = new_game.player1;
-    let p2 = new_game.player2;
-    let id_1 = user_uuid.clone();
-    let id_2 = user_uuid;
+    let p2 = Some(new_game.player2);
+    let p1 = Some(new_game.player1);
+    let id_1 = Some(user_uuid.clone());
+    let id_2 = Some(user_uuid);
     let elo1 = new_game.elo1;
     let elo2 = new_game.elo2;
     let stealo1 = new_game.stealo1;
     let stealo2 = new_game.stealo2;
-    let id = GameId::new();
     let new_game = ChessGame::new_game(p1, p2, id_1, id_2, elo1, elo2, stealo1, stealo2);
-    let _ = state.repository.save_game(&id, &new_game)
+    let game_id = state.game_store.new_game(new_game)
         .map_err(|_| return StatusCode::INTERNAL_SERVER_ERROR)
         .await?;
-    state.cache.insert(id.clone(), new_game).await;
 
-    log::info!("Game {:?} started", id);
-    Ok(id.into_string())
+    log::info!("Game {:?} created", game_id);
+    Ok(game_id.into_string())
 }
 
 pub async fn start_online_game(
@@ -66,4 +65,9 @@ pub async fn get_or_create_user_uuid(session: Session) -> anyhow::Result<Uuid> {
             Ok(Uuid::parse_str(&new_uuid)?)
         }
     }
+}
+
+pub async fn stealo_rules(State(state): State<AppState>) -> Json<Vec<StealoRule>> {
+    let rules = state.game_store.get_stealo_rules().await.unwrap_or(Vec::new());
+    Json(rules)
 }
