@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO games (id, game, white, black, white_id, black_id, elo_white, elo_black, rule_id_white, rule_id_black)\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)\n            ON CONFLICT (id) DO UPDATE\n            SET game = EXCLUDED.game\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Bytea",
+        "Varchar",
+        "Varchar",
+        "Uuid",
+        "Uuid",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2ca0d9d9d5ea260ff1d6ec66a07d811470f2f21690d8bdce273f946a7d89e605"
+}

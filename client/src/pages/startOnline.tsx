@@ -1,6 +1,6 @@
 import {useGameContext} from "../GameContextProvider.tsx";
-import {FormInput} from "../layouts/FormInput.tsx";
-import {StealoInput} from "../layouts/StealoInput.tsx";
+import {FormInput} from "../components/FormInput.tsx";
+import {StealoInput} from "../components/StealoInput.tsx";
 import {useContext, useEffect, useState} from "react";
 import {GameState, isGameState, StealoRule} from "../types.ts";
 import {get_stealo_rules, start_online} from "../api.ts";
@@ -9,7 +9,7 @@ import {random_stealo} from "../shared_functions.ts";
 import {SocketContext} from "../SocketContext.tsx";
 
 export const Start = () => {
-    const websocket = useContext(SocketContext);
+    //const websocket = useContext(SocketContext);
     const { setGameState, roomCode, setRoomCode, setGameType, setColor } = useGameContext();
     const [waitForPlayerTwo, setWaitForPlayerTwo] = useState(false);
     const [rules, setRules] = useState<StealoRule[]>([]);
@@ -32,61 +32,61 @@ export const Start = () => {
         return get_rule.description;
     }
 
-    function create_room() {
-        setColor("white");
-        const newCode = nanoid(8);
-        setRoomCode(newCode);
-        websocket.emit("create_room", {room: newCode, name: player, elo: elo, stealo: stealo});
-    }
-
-    function leave_room() {
-        websocket.emit("leave", roomCode)
-    }
-
-    function join_room() {
-        setColor("black")
-        setRoomCode(code);
-        websocket.emit("join", {room: code, name: player, elo: elo, stealo: stealo});
-    }
-
-    function start_game(result: GameState) {
-        websocket.emit("start_game", result)
-    }
-
-    useEffect(() => {
-        get_rules();
-    }, []);
-
-    useEffect(()=>{
-        // Creator of the room receives the other player's data and creates the game.
-        websocket.on("create_game", async(arg) => {
-            setGameType("online");
-            if (waitForPlayerTwo) {
-                const [stealo1, stealo2]: [number, number] = random_stealo(elo, arg.elo, stealo, arg.stealo, rules);
-                const elo1 = (isNaN(Number(elo))) ? 0 : Number(elo);
-                const elo2 = (isNaN(Number(arg.elo))) ? 0 : Number(arg.elo);
-                const result = await start_online(roomCode, player, arg.name, elo1, elo2, stealo1, stealo2);
-                if (isGameState(result)) {
-                    setGameState(result);
-                    start_game(result);
-                } else {
-                    alert("Something went wrong ")
-                }
-            }
-        })
-    },[websocket, player, roomCode, waitForPlayerTwo]);
-
-    useEffect( () => {
-        websocket.on("join",() => { setWaitForPlayerTwo(true)});
-        websocket.on("room_not_found", () => { alert("Game not found. You can create a new game with the 'Start game' button")})
-        websocket.on("full", () => alert("Game already has 2 players"));
-        websocket.on("leave", () => {setWaitForPlayerTwo(false)});
-        websocket.on("start_game", (arg) => {
-            if (isGameState(arg)) {
-                setGameState(arg);
-            }
-        })
-    }, [websocket]);
+    // function create_room() {
+    //     setColor("white");
+    //     const newCode = nanoid(8);
+    //     setRoomCode(newCode);
+    //     websocket.emit("create_room", {room: newCode, name: player, elo: elo, stealo: stealo});
+    // }
+    //
+    // function leave_room() {
+    //     websocket.emit("leave", roomCode)
+    // }
+    //
+    // function join_room() {
+    //     setColor("black")
+    //     setRoomCode(code);
+    //     websocket.emit("join", {room: code, name: player, elo: elo, stealo: stealo});
+    // }
+    //
+    // function start_game(result: GameState) {
+    //     websocket.emit("start_game", result)
+    // }
+    //
+    // useEffect(() => {
+    //     get_rules();
+    // }, []);
+    //
+    // useEffect(()=>{
+    //     // Creator of the room receives the other player's data and creates the game.
+    //     websocket.on("create_game", async(arg) => {
+    //         setGameType("online");
+    //         if (waitForPlayerTwo) {
+    //             const [stealo1, stealo2]: [number, number] = random_stealo(elo, arg.elo, stealo, arg.stealo, rules);
+    //             const elo1 = (isNaN(Number(elo))) ? 0 : Number(elo);
+    //             const elo2 = (isNaN(Number(arg.elo))) ? 0 : Number(arg.elo);
+    //             const result = await start_online(roomCode, player, arg.name, elo1, elo2, stealo1, stealo2);
+    //             if (isGameState(result)) {
+    //                 setGameState(result);
+    //                 start_game(result);
+    //             } else {
+    //                 alert("Something went wrong ")
+    //             }
+    //         }
+    //     })
+    // },[websocket, player, roomCode, waitForPlayerTwo]);
+    //
+    // useEffect( () => {
+    //     websocket.on("join",() => { setWaitForPlayerTwo(true)});
+    //     websocket.on("room_not_found", () => { alert("Game not found. You can create a new game with the 'Start game' button")})
+    //     websocket.on("full", () => alert("Game already has 2 players"));
+    //     websocket.on("leave", () => {setWaitForPlayerTwo(false)});
+    //     websocket.on("start_game", (arg) => {
+    //         if (isGameState(arg)) {
+    //             setGameState(arg);
+    //         }
+    //     })
+    // }, [websocket]);
 
     // Form to create or join a room
     if (!waitForPlayerTwo) {
@@ -135,9 +135,9 @@ export const Start = () => {
                     </div>
                     <div className="flex items-center justify-center">
                         <button className="px-5 py-1 mb-5 mt-3 mx-5 rounded-lg text-xl border-gray-600 border-2 bg-gray-300 hover:bg-white"
-                                disabled={!valid} onClick={(event) => { event.preventDefault();  create_room()}}>Start game</button>
+                                disabled={!valid} onClick={(event) => { event.preventDefault(); }}>Start game</button>
                         <button className="px-5 py-1 mb-5 mt-3 mx-5 rounded-lg text-xl border-gray-600 border-2 bg-gray-300 hover:bg-white"
-                                disabled={!valid} onClick={(event) => { event.preventDefault(); join_room()}}>Join game</button>
+                                disabled={!valid} onClick={(event) => { event.preventDefault(); }}>Join game</button>
                     </div>
                 </form>
             </div>
@@ -151,7 +151,7 @@ export const Start = () => {
                 <div className="mt-8 mb-2 mx-auto items-center text-center">Code: { roomCode }</div>
                 <div className="flex items-center justify-center">
                     <button className="px-5 py-1 mb-5 mt-3 mx-5 rounded-lg text-xl border-gray-600 border-2 bg-gray-300 hover:bg-white"
-                            onClick={ (event) => {event.preventDefault(); leave_room()}}>Leave</button>
+                            onClick={ (event) => {event.preventDefault(); }}>Leave</button>
                 </div>
             </div>
         </div>)

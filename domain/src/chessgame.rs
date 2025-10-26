@@ -2,10 +2,13 @@ use crate::move_generator::generate_moves;
 use crate::stringtomove::string_to_move;
 use chess::GameResult::{BlackResigns, Stalemate, WhiteResigns};
 use chess::{Action, Board, ChessMove, Color, Game, MoveGen};
+use uuid::Uuid;
 
 pub struct ChessGame {
-    pub white: String,
-    pub black: String,
+    pub white: Option<String>,
+    pub black: Option<String>,
+    pub white_id: Option<Uuid>,
+    pub black_id: Option<Uuid>,
     pub game: Game,
     pub elo_white: i32,
     pub elo_black: i32,
@@ -14,6 +17,31 @@ pub struct ChessGame {
 }
 
 impl ChessGame {
+
+    pub fn new_game(
+        player1: Option<String>,
+        player2: Option<String>,
+        player1_id: Option<Uuid>,
+        player2_id: Option<Uuid>,
+        elo1: i32,
+        elo2: i32,
+        stealo1: i32,
+        stealo2: i32
+    ) -> Self {
+        let g = Game::new();
+        ChessGame {
+            white: player1,
+            black: player2,
+            white_id: player1_id,
+            black_id: player2_id,
+            game: g,
+            elo_white: elo1,
+            elo_black: elo2,
+            rule_id_white: stealo1,
+            rule_id_black: stealo2,
+        }
+    }
+
     pub fn get_move_gen(&self) -> MoveGen {
         let board = self.game.current_position();
         let moves = MoveGen::new_legal(&board);
@@ -22,6 +50,20 @@ impl ChessGame {
 
     pub fn get_position(&self) -> Board {
         self.game.current_position()
+    }
+
+    pub fn make_move_new(&mut self, move_to_make: String) {
+        let chess_move = string_to_move(move_to_make);
+        if self.get_moves().contains(&chess_move) {
+            self.game.make_move(chess_move);
+        }
+    }
+
+    pub fn get_uuid_with_turn(&self) -> Option<&Uuid> {
+        match self.game.side_to_move() {
+            Color::White => self.white_id.as_ref(),
+            Color::Black => self.black_id.as_ref(),
+        }
     }
 
     pub fn make_move(&mut self, move_to_make: String, color: Option<String>) {
@@ -80,40 +122,30 @@ impl ChessGame {
     }
 }
 
-pub fn new_game(
-    player1: String,
-    player2: String,
-    elo1: i32,
-    elo2: i32,
-    stealo1: i32,
-    stealo2: i32,
-) -> ChessGame {
-    let g = Game::new();
-    ChessGame {
-        white: player1,
-        black: player2,
-        game: g,
-        elo_white: elo1,
-        elo_black: elo2,
-        rule_id_white: stealo1,
-        rule_id_black: stealo2,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::str::FromStr;
 
+    fn setup_game() -> ChessGame {
+        ChessGame::new_game(
+            Some("AtoomBlom".to_string()),
+            Some("Opponent".to_string()),
+            Some(Uuid::new_v4()),
+            Some(Uuid::new_v4()),
+            0, 0, 0, 0,
+        )
+    }
+
     #[test]
     fn get_position_test() {
-        let game = new_game("AtoomBlom".to_string(), "Opponent".to_string(), 0, 0, 0, 0);
+        let game = setup_game();
         assert_eq!(game.get_position(), Board::default());
     }
 
     #[test]
     fn turn_number_test() {
-        let mut game = new_game("AtoomBlom".to_string(), "Opponent".to_string(), 0, 0, 0, 0);
+        let mut game = setup_game();
         game.make_move("e2e4".to_string(), None);
         game.make_move("e7e5".to_string(), None);
         game.make_move("e1e2".to_string(), None);
@@ -124,7 +156,7 @@ mod tests {
 
     #[test]
     fn stalemate_test() {
-        let mut game = new_game("AtoomBlom".to_string(), "Opponent".to_string(), 0, 0, 0, 0);
+        let mut game = setup_game();
         let stalemate_position = Board::from_str("k7/8/8/8/8/8/2q5/K7 w - - 0 1").unwrap();
         game.game = Game::new_with_board(stalemate_position);
         assert_eq!("draw".to_string(), game.winner_when_no_moves());
@@ -132,20 +164,20 @@ mod tests {
 
     #[test]
     fn no_moves_white_turn() {
-        let game = new_game("AtoomBlom".to_string(), "Opponent".to_string(), 0, 0, 0, 0);
+        let game = setup_game();
         assert_eq!("black".to_string(), game.winner_when_no_moves());
     }
 
     #[test]
     fn no_moves_black_turn() {
-        let mut game = new_game("AtoomBlom".to_string(), "Opponent".to_string(), 0, 0, 0, 0);
+        let mut game = setup_game();
         game.make_move("e2e4".to_string(), None);
         assert_eq!("white".to_string(), game.winner_when_no_moves());
     }
 
     #[test]
     fn white_resigns() {
-        let mut game = new_game("AtoomBlom".to_string(), "Opponent".to_string(), 0, 0, 0, 0);
+        let mut game = setup_game();
         game.make_move("resign".to_string(), Some("white".to_string()));
         assert_eq!(game.get_moves().len(), 0);
     }
@@ -153,8 +185,9 @@ mod tests {
     #[test]
     fn illegal_move_due_to_stealo() {
         // Stealo 59: white has to begin with Nb1-a3
-        let mut game = new_game("AtoomBlom".to_string(), "Opponent".to_string(), 0, 0, 59, 0);
+        let mut game = setup_game();
+        game.rule_id_white = 59;
         game.make_move("e2e4".to_string(), None);
-        assert_eq!(game.get_position(), chess::Game::new().current_position());
+        assert_eq!(game.get_position(), Game::new().current_position());
     }
 }

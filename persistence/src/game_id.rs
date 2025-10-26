@@ -15,7 +15,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::clone::Clone;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Eq, Hash)]
 pub struct GameId(String);
 
 impl GameId {
@@ -33,10 +33,40 @@ impl GameId {
     pub fn as_str(&self) -> &str {
         &self.0
     }
+
+    pub fn into_string(self) -> String {
+        self.0
+    }
 }
 
-impl From<String> for GameId {
-    fn from(s: String) -> Self {
-        GameId(s)
+impl TryFrom<String> for GameId {
+    type Error = &'static str;
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        if s.len() == 10 || s.len() == 11 {
+            Ok(GameId(s))
+        }
+        else {
+            Err("Invalid game id.")
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn try_from_test() {
+        let ten_chars = GameId::try_from("abcdefghij".to_string());
+        let eleven_chars = GameId::try_from("12345678910".to_string());
+        assert!(ten_chars.is_ok());
+        assert!(eleven_chars.is_ok());
+    }
+
+    #[test]
+    fn try_from_fail_test() {
+        let too_short = GameId::try_from("123456789".to_string());
+        assert!(too_short.is_err());
     }
 }

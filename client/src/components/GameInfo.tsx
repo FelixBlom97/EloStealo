@@ -1,7 +1,7 @@
-import {Color, StealoRule} from "../types.ts";
-import {GameButton} from "./GameButton.tsx";
+import { StealoRule } from "../types.ts";
 
 type Props = {
+    game_type: "local" | "online",
     player1: string,
     player2: string,
     elo1: number,
@@ -9,11 +9,14 @@ type Props = {
     stealo1: number,
     stealo2: number,
     result: string,
-    play_move: (move: string, color: Color) => void,
 }
 
 export const GameInfo = (props: Props) => {
-    const { player1, player2, elo1, elo2, stealo1, stealo2, result, play_move } = props;
+    if (props.game_type === "local") {
+
+    // Local game info component
+    // This component is used for local games, where the rules are revealed during the game.
+    const { player1, player2, elo1, elo2, stealo1, stealo2, result } = props;
     const rules = localStorage.getItem("rules");
     const rule1 = rules? JSON.parse(rules).filter((rule: StealoRule) => {return rule.id===stealo1})[0]
         : {name: "Couldn't get rule", description: "", elo: ""};
@@ -24,25 +27,24 @@ export const GameInfo = (props: Props) => {
     const reveal_instruction = (result == "none") ? "Hover to reveal stealo" : ""
 
     return (
-    <div className="h-full w-full px-3 py-2 bg-gray-200 border-2 border-gray-600 rounded-lg flex flex-col">
-        <div className="basis-1/12 my-2 text-2xl font-bold break-words" > {player2}  ({elo2})</div>
-        <div className={stealo_css}>{rule2.name} ({rule2.elo}): <br />
-            {rule2.description}</div>
-        <div className="basis-2/12 my-2 flex flex-row border-2" >
-            <GameButton text={"Offer draw"} color={"black"} play_move={play_move}/>
-            <GameButton text={"Resign"} color={"black"} play_move={play_move}/></div>
-        <div className="basis-1/12 my-2 flex justify-center text-sm pt-3" >{reveal_instruction} </div>
-        <div className="basis-2/12 my-2 flex flex-row">
-            <GameButton text={"Offer draw"} color={"white"} play_move={play_move}/>
-            <GameButton text={"Resign"} color={"white"} play_move={play_move}/></div>
-        <div className="basis-1/12 my-2 text-2xl font-bold break-words" > {player1}  ({elo1})</div>
-        <div className={stealo_css} > {rule1.name} ({rule1.elo}): <br />
-            {rule1.description}</div>
-    </div>
+        <div className="h-full w-full px-3 py-2 bg-gray-200 border-2 border-gray-600 rounded-lg flex flex-col">
+            <div className="basis-1/12 my-2 text-2xl font-bold break-words" > {player2}  ({elo2})</div>
+            <div className={stealo_css}>{rule2.name} ({rule2.elo}): <br />
+                {rule2.description}</div>
+            <div className="basis-2/12 my-2 flex flex-row border-2" >
+            </div>
+            <div className="basis-1/12 my-2 flex justify-center text-sm pt-3" >{reveal_instruction} </div>
+            <div className="basis-2/12 my-2 flex flex-row">
+            </div>
+            <div className="basis-1/12 my-2 text-2xl font-bold break-words" > {player1}  ({elo1})</div>
+            <div className={stealo_css} > {rule1.name} ({rule1.elo}): <br />
+                {rule1.description}</div>
+        </div>
     )
-}
+    } else {
 
-export const GameInfoOnline = (props: Props) => {
+    // Online game info component
+    // This component is used for online games, where the rules are revealed after the game ends.
     const { player1, player2, elo1, elo2, stealo1, stealo2, result } = props;
     const elo_p1 = (elo1 != 0)? elo1 : "???";
     const elo_p2 = (elo2 != 0 && result != "none")? elo2 : "???";
@@ -65,4 +67,6 @@ export const GameInfoOnline = (props: Props) => {
                 {rule1.description}</div>
         </div>
     )
+    }
+
 }

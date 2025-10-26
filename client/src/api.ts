@@ -18,8 +18,9 @@ export async function startGame(player1: string, player2: string, elo1: number, 
         }),
     });
     if (response.ok) {
-        const gamestate = await response.json();
-        return gamestate as GameState;
+        // const gamestate = await response.json();
+        // return gamestate as GameState;
+        return await response.text()
     } else {
         return {
             statusCode: response.status,

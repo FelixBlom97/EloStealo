@@ -1,18 +1,20 @@
-import {useState, useEffect, useContext} from "react";
+import {useState, useEffect} from "react";
 import {Chessboard} from "react-chessboard";
 import {useGameContext} from "../GameContextProvider.tsx";
 import {get_game_info} from "../api.ts";
 import {isGameState, GameInfoType, OnlineMove, isGameInfoType, Color} from "../types.ts";
 import {Piece, Square} from "react-chessboard/dist/chessboard/types";
 import {format_promotion_piece} from "../shared_functions.ts";
-import {SocketContext} from "../SocketContext.tsx";
-import {GameInfoOnline} from "../layouts/GameInfo.tsx";
+import { GameInfo } from "../components/GameInfo.tsx";
 
 export const Play = () => {
-    const websocket = useContext(SocketContext);
-    const {gameState, setGameState, roomCode, color} = useGameContext();
+    //const websocket = useContext(SocketContext);
+    const {gameState, roomCode, color} = useGameContext();
     const board = gameState?.board;
-    const initialInfo: GameInfoType = {  white:"", black: "", white_elo: 0, black_elo: 0, white_stealo: 0, black_stealo: 0 }
+    const initialInfo: GameInfoType = {
+        white: "", black: "", white_elo: 0, black_elo: 0, white_stealo: 0, black_stealo: 0,
+        game_type: "local"
+    }
     const [gameInfo, setGameInfo] = useState<GameInfoType>(initialInfo)
     const player1 = (color === "white") ? gameInfo.white : gameInfo.black;
     const player2 = (color === "white") ? gameInfo.black : gameInfo.white;
@@ -26,14 +28,14 @@ export const Play = () => {
     let drag_pawn: boolean = false; // Used to check if a pawn is being promoted this move.
     let resultText = "";
 
-    const set_game_info = async() => {
-        const game_info = await get_game_info(roomCode, color);
-        if (isGameInfoType(game_info)) {
-            setGameInfo(game_info);
-        } else {
-            alert("Everything is on fire.")
-        }
-    }
+    // const set_game_info = async() => {
+    //     const game_info = await get_game_info(roomCode, color);
+    //     if (isGameInfoType(game_info)) {
+    //         setGameInfo(game_info);
+    //     } else {
+    //         alert("Everything is on fire.")
+    //     }
+    // }
 
     async function play_move(move: string) {
         if (!moves) {
@@ -41,7 +43,7 @@ export const Play = () => {
         }
         else if (moves.includes(move)) {
             const online_move: OnlineMove = { roomcode: roomCode, play_move: move}
-            websocket.emit("move", online_move)
+            //websocket.emit("move", online_move)
             return false;
         }
         else {
@@ -67,27 +69,27 @@ export const Play = () => {
 
     // Dependency on result to request game info again once the game is finished.
     // Server send full game info on a finished game and partial info on an ongoing one.
-    useEffect(() => {
-        set_game_info()
-    }, [result])
-
-    useEffect( () =>{
-        websocket.on("connected", () => {
-            if ( roomCode != "" ) { websocket.emit("reconnected", roomCode) }
-        });
-        websocket.on("disconnected", () => { websocket.emit("disconnect_timer", roomCode) });
-    }, [websocket, roomCode])
-
-    useEffect( () => {
-        websocket.on("sync", (arg) => {
-            if (isGameState(arg)) {
-                setGameState(arg);
-            }
-        });
-        websocket.on("abandon", () => {
-            if (result == "none") {alert("Opponent abandoned the game"); location.reload()}
-        });
-    }, [websocket])
+    // useEffect(() => {
+    //     set_game_info()
+    // }, [result])
+    //
+    // useEffect( () =>{
+    //     websocket.on("connected", () => {
+    //         if ( roomCode != "" ) { websocket.emit("reconnected", roomCode) }
+    //     });
+    //     websocket.on("disconnected", () => { websocket.emit("disconnect_timer", roomCode) });
+    // }, [websocket, roomCode])
+    //
+    // useEffect( () => {
+    //     websocket.on("sync", (arg) => {
+    //         if (isGameState(arg)) {
+    //             setGameState(arg);
+    //         }
+    //     });
+    //     websocket.on("abandon", () => {
+    //         if (result == "none") {alert("Opponent abandoned the game"); location.reload()}
+    //     });
+    // }, [websocket])
 
     if (result == "none") {
         return (
@@ -103,10 +105,9 @@ export const Play = () => {
                     />
                 </div>
                 <div className="w-1/3">
-                    <GameInfoOnline player1={player1} player2={player2}
-                              elo1={elo1} elo2={elo2}
-                              stealo1={stealo1} stealo2={stealo2} result={result} play_move={filler_play_move}
-                    />
+                    <GameInfo player1={player1} player2={player2}
+                    elo1={elo1} elo2={elo2}
+                    stealo1={stealo1} stealo2={stealo2} result={result} game_type={"local"}                    />
                 </div>
             </div>
         )
@@ -131,9 +132,9 @@ export const Play = () => {
                         <Chessboard position={board} boardOrientation={color} arePiecesDraggable={false}/>
                     </div>
                     <div className="w-1/3">
-                        <GameInfoOnline player1={player1} player2={player2}
-                                  elo1={elo1} elo2={elo2}
-                                  stealo1={stealo1} stealo2={stealo2} result={result} play_move={filler_play_move}/>
+                        <GameInfo player1={player1} player2={player2}
+                    elo1={elo1} elo2={elo2}
+                    stealo1={stealo1} stealo2={stealo2} result={result} game_type={"local"}/>
                     </div>
                 </div>
             </div>

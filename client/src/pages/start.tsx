@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
-import {useGameContext} from "../GameContextProvider.tsx";
-import { StealoRule, isGameState } from "../types";
-import { FormInput } from "../layouts/FormInput";
+import { StealoRule } from "../types";
+import { FormInput } from "../components/FormInput.tsx";
 import {startGame, get_stealo_rules} from "../api";
-import { StealoInput } from "../layouts/StealoInput";
+import { StealoInput } from "../components/StealoInput.tsx";
 import {random_stealo} from "../shared_functions.ts";
+import {useNavigate} from "react-router-dom";
 
 
 export const Start = () => {
-
-    const { setGameState, setGameType } = useGameContext();
+    const navigate = useNavigate();
     const [player1, setPlayer1] = useState("");
     const [player2, setPlayer2] = useState("");
     const [elo1, setElo1] = useState("");
@@ -46,9 +45,8 @@ export const Start = () => {
         const elo_white = (isNaN(Number(elo1))) ? 0 : Number(elo1);
         const elo_black = (isNaN(Number(elo2))) ? 0 : Number(elo2);
         const result = await startGame(player1, player2, elo_white, elo_black, stealo1, stealo2)
-        if (isGameState(result)) {
-            setGameState(result);
-            setGameType("local");
+        if (typeof result === "string") {
+            navigate(`/game/${result}`)
         }
         else {
             alert("AAAAAAAAAAAAAAH")

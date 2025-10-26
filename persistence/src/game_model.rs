@@ -2,11 +2,13 @@ use anyhow::anyhow;
 use chess::{Action, Board, Color, Game, MoveGen};
 use domain::chessgame::ChessGame;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(Serialize, Deserialize)]
 pub struct GameModel {
     pub white: String,
     pub black: String,
+    pub white_id: Uuid,
+    pub black_id: Uuid,
     pub game: Vec<u8>,
     pub elo_white: i32,
     pub elo_black: i32,
@@ -18,6 +20,8 @@ pub fn chess_game_to_model(chess_game: &ChessGame) -> GameModel {
     GameModel {
         white: chess_game.white.clone(),
         black: chess_game.black.clone(),
+        white_id: chess_game.white_id,
+        black_id: chess_game.black_id,
         game: encode_game(&chess_game.game).unwrap(),
         elo_white: chess_game.elo_white,
         elo_black: chess_game.elo_black,
@@ -30,6 +34,8 @@ pub fn model_to_chess_game(game_model: GameModel) -> ChessGame {
     ChessGame {
         white: game_model.white,
         black: game_model.black,
+        white_id: game_model.white_id,
+        black_id: game_model.black_id,
         elo_white: game_model.elo_white,
         elo_black: game_model.elo_black,
         rule_id_white: game_model.rule_id_white,

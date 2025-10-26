@@ -3,8 +3,10 @@ mod game_dto;
 mod handlers;
 mod socket_handlers;
 mod socket_handler;
-mod game_cache;
 mod game_room;
+mod handler;
+mod DTOs;
+mod game_store;
 
 use std::env;
 use crate::configuration::ApplicationSettings;
@@ -16,12 +18,13 @@ use axum::{
 use env_logger::Env;
 use socketioxide::SocketIo;
 use std::net::SocketAddr;
+use sqlx::postgres::PgPoolOptions;
 use tower_http::services::fs::ServeFile;
 use tower_http::services::ServeDir;
-use tower_sessions::{MemoryStore, SessionManagerLayer};
+use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 use tracing::log;
 use persistence::elo_stealo_postgres::EloStealoPostgresStore;
-use crate::game_cache::GameCache;
+use crate::game_store::GameStore;
 
 #[tokio::main]
 async fn main() {
@@ -33,17 +36,20 @@ async fn main() {
 
     let database_url = env::var("DATABASE_URL").unwrap_or_else(
         |_| "postgres://postgres:postgres@localhost:5432/EloStealo".into());
+    let pool = PgPoolOptions::new()
+        .max_connections(8)
+        .connect(database_url.as_str())
+        .await
+        .expect("Could not connect to postgres");
 
-    let repository = EloStealoPostgresStore::new(database_url).await.expect("Failed to create EloStealoPostgresStore");
-    let cache = GameCache::new(1000);
-    let state = AppState { repository, cache };
+    let repository = EloStealoPostgresStore::new(pool).await.expect("Failed to create EloStealoPostgresStore");
+    let game_store = GameStore::new(1000, repository);
+    let state = AppState { game_store };
 
     let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store).with_secure(false);
-    let (socket_layer, io) = SocketIo::builder()
-        .with_state(state.clone())
-        .build_layer();
-    io.ns("/api/socket", socket_handlers::on_connect);
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(false)
+        .with_expiry(Expiry::OnSessionEnd);
 
     let client = ServeDir::new("./client/dist").fallback(ServeFile::new("index.html"));
 
@@ -51,15 +57,12 @@ async fn main() {
         .nest_service("/", client)
         .route("/online", get(|| async { Redirect::permanent("/") }))
         .route("/about", get(|| async { Redirect::permanent("/") }))
-        .route("/api/startgame", post(handlers::start_game))
+        .route("/api/startgame", post(handler::start_local_game))
         .route("/api/play", post(handlers::play))
         .route("/api/rules", get(handlers::stealo_rules))
-        .route("/api/start_online", post(handlers::start_online))
-        .route("/api/get_game_info", post(handlers::get_game_info))
         .route("/api/get_local_info", get(handlers::get_local_info))
         .route("/ws/:room_id", get(socket_handler::websocket_handler))
         .layer(session_layer)
-        .layer(socket_layer)
         .with_state(state);
 
     let addr = SocketAddr::from((settings.host, settings.port));
@@ -72,6 +75,5 @@ async fn main() {
 
 #[derive(Clone)]
 struct AppState {
-    repository: EloStealoPostgresStore,
-    cache: GameCache,
+    game_store: GameStore,
 }

@@ -11,6 +11,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/roboto": "^5.2.6",
+    "@mui/material": "^7.3.1",
     "chessboardjsx": "^2.4.7",
     "classnames": "^2.5.1",
     "cors": "^2.8.5",

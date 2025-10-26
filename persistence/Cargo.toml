@@ -5,9 +5,10 @@ edition = "2021"
 
 [dependencies]
 domain = { path = "../domain" }
-sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio", "macros"]}
+sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio", "macros", "uuid"]}
 chess = "3.2.0"
 serde = { version = "1.0.203", features = ["derive"] }
 anyhow = "1.0.97"
 bs58 = "0.5.1"
 rand = "0.9.1"
+uuid = { version = "1.17.0", features = ["v4"] }

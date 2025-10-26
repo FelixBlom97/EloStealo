@@ -1,19 +1,15 @@
 import { Chessboard } from "react-chessboard"
 import { useGameContext} from "../GameContextProvider.tsx"
 import {Square, Piece} from "react-chessboard/dist/chessboard/types";
-import {get_local_game_info, play} from "../api"
-import {isGameState, isGameInfoType, GameInfoType, Color} from "../types.ts";
+import {play} from "../api"
+import {isGameState, Color} from "../types.ts";
 import {format_promotion_piece} from "../shared_functions.ts";
-import {useEffect, useState} from "react";
-import {GameInfo} from "../layouts/GameInfo.tsx";
 
 export const Play = () => {
     const {gameState, setGameState} = useGameContext();
     const board = gameState?.board;
     const moves = gameState?.moves;
     const result = gameState?.result;
-    const initialInfo: GameInfoType = {  white:"", black: "", white_elo: 0, black_elo: 0, white_stealo: 0, black_stealo: 0 }
-    const [gameInfo, setGameInfo] = useState<GameInfoType>(initialInfo)
     let text = ""
     let drag_pawn: boolean = false; // Used to check if a pawn is being promoted this move.
 
@@ -51,18 +47,7 @@ export const Play = () => {
         }
     }
 
-    const set_game_info = async () => {
-        const gameInfo = await get_local_game_info();
-        if (isGameInfoType(gameInfo)) {
-            setGameInfo(gameInfo);
-        } else {
-            alert("What did you dooooooooo?");
-        }
-    }
 
-    useEffect(() => {
-        set_game_info()
-    },[])
 
 
     //<div className="text-2xl text-gray-700 font-semibold">{ player2 }</div>
@@ -79,16 +64,11 @@ export const Play = () => {
                             animationDuration={80}/>
             </div>
             <div className="w-1/3">
-                <GameInfo player1={gameInfo.white} player2={gameInfo.black}
-                          elo1={gameInfo.white_elo} elo2={gameInfo.black_elo}
-                          stealo1={gameInfo.white_stealo} stealo2={gameInfo.black_stealo} result={result} play_move={move}/>
             </div>
         </div>)
     } else if (result != undefined) {
         if (result == "white") {
-            text = gameInfo.white + " wins!"
         } else if (result == "black") {
-            text = gameInfo.black + " wins!"
         } else {
             text = "It's a draw!"
         }
@@ -108,9 +88,6 @@ export const Play = () => {
                     <Chessboard position={board} arePiecesDraggable={false}/>
                 </div>
                 <div className="w-1/3">
-                    <GameInfo player1={gameInfo.white} player2={gameInfo.black}
-                              elo1={gameInfo.white_elo} elo2={gameInfo.black_elo}
-                              stealo1={gameInfo.white_stealo} stealo2={gameInfo.black_stealo} result={result} play_move={move}/>
                 </div>
             </div>
         </div>)

@@ -8,31 +8,11 @@ use axum::Json;
 use domain::chessgame::ChessGame;
 use tower_sessions::Session;
 use tracing::log;
+use uuid::Uuid;
 use persistence::game_id::GameId;
-use persistence::game_info::GameInfo;
 use persistence::stealo_rule::StealoRule;
-
+use crate::DTOs::game_info_dto::GameInfoDTO;
 // Local play
-pub async fn start_game(
-    State(state): State<AppState>,
-    session: Session,
-    Json(new_game): Json<NewLocalGame>,
-) -> Result<Json<GameDTO>, StatusCode> {
-    let p1 = new_game.player1;
-    let p2 = new_game.player2;
-    let elo1 = new_game.elo1;
-    let elo2 = new_game.elo2;
-    let stealo1 = new_game.stealo1;
-    let stealo2 = new_game.stealo2;
-    let id = GameId::new();
-    session.insert("gameId", id.as_str()).await.unwrap();
-    let new_game = domain::chessgame::new_game(p1, p2, elo1, elo2, stealo1, stealo2);
-    let game_dto = create_game_dto(&new_game);
-    match state.repository.save_game(id, new_game).await {
-        Ok(()) => Ok(Json(game_dto)),
-        Err(_e) => Err(StatusCode::INTERNAL_SERVER_ERROR),
-    }
-}
 
 pub async fn play(
     State(state): State<AppState>,
@@ -90,36 +70,3 @@ pub async fn stealo_rules(State(state): State<AppState>) -> Json<Vec<StealoRule>
     Json(rules)
 }
 
-// Online play
-pub async fn start_online(
-    State(state): State<AppState>,
-    Json(new_game): Json<NewOnlineGame>,
-) -> Result<Json<GameDTO>, StatusCode> {
-    let id = new_game.roomcode;
-    let p1 = new_game.player1;
-    let p2 = new_game.player2;
-    let elo1 = new_game.elo1;
-    let elo2 = new_game.elo2;
-    let stealo1 = new_game.stealo1;
-    let stealo2 = new_game.stealo2;
-    let new_game = domain::chessgame::new_game(p1, p2, elo1, elo2, stealo1, stealo2);
-    let game_dto = create_game_dto(&new_game);
-    match state.repository.save_game(GameId::from(id), new_game).await {
-        Ok(()) => Ok(Json(game_dto)),
-        Err(_e) => Err(StatusCode::INTERNAL_SERVER_ERROR),
-    }
-}
-
-pub async fn get_game_info(
-    State(state): State<AppState>,
-    Json(get_rule): Json<GetInfo>,
-) -> Result<Json<GameInfo>, StatusCode> {
-    let game_info = state.repository.load_game_info(GameId::from(get_rule.roomcode), get_rule.color).await;
-    match game_info {
-        Ok(info) => Ok(Json(info)),
-        Err(e) => {
-            log::error!("Failed to fetch game info: {:?}", e);
-            Err(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
