@@ -1,9 +1,9 @@
 use crate::game_model::{chess_game_to_model, model_to_chess_game, GameModel};
 use crate::stealo_rule::StealoRule;
 use domain::chessgame::ChessGame;
-use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use crate::game_id::GameId;
+use tracing::log;
 
 #[derive(Clone, Debug)]
 pub struct EloStealoPostgresStore {
@@ -12,7 +12,6 @@ pub struct EloStealoPostgresStore {
 
 impl EloStealoPostgresStore {
     pub async fn new(pool: PgPool) -> Result<EloStealoPostgresStore, anyhow::Error> {
-
         sqlx::migrate!("./migrations").run(&pool).await?;
         Ok(EloStealoPostgresStore { pool })
     }
@@ -35,13 +34,14 @@ impl EloStealoPostgresStore {
         )
         .execute(&self.pool)
         .await?;
+        log::info!("Saved new game with id {:?}", id);
         Ok(())
     }
 
     pub async fn get_game(&self, id: GameId) -> anyhow::Result<ChessGame> {
         let game_model = sqlx::query_as!(
             GameModel,
-            r#"SELECT white, black, white_id, black_id, game, elo_white, elo_black, rule_id_white, rule_id_black
+            r#"SELECT game, white, black, white_id, black_id, elo_white, elo_black, rule_id_white, rule_id_black
             FROM games WHERE id = $1"#,
             id.as_str()
         )

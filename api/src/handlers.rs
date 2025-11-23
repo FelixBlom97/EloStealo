@@ -11,7 +11,7 @@
 // use uuid::Uuid;
 // use persistence::game_id::GameId;
 // use persistence::stealo_rule::StealoRule;
-// use crate::DTOs::game_info_dto::GameInfoDTO;
+// use crate::dtos::game_info_dto::GameInfoDTO;
 // // Local play
 //
 // pub async fn play(

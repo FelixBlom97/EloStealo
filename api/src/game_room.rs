@@ -3,8 +3,8 @@ use tokio::sync::{broadcast, Mutex};
 use tokio::sync::broadcast::Sender;
 use uuid::Uuid;
 use domain::chessgame::ChessGame;
-use crate::DTOs::game_dto::GameDTO;
-use crate::DTOs::game_info_dto::GameInfoDTO;
+use crate::dtos::game_dto::GameDTO;
+use crate::dtos::game_info_dto::GameInfoDTO;
 
 #[derive(Clone)]
 pub struct GameRoom {

@@ -1,7 +1,6 @@
 use anyhow::anyhow;
 use chess::{Action, Board, Color, Game, MoveGen};
 use domain::chessgame::ChessGame;
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 pub struct GameModel {

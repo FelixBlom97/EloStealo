@@ -12,3 +12,4 @@ anyhow = "1.0.97"
 bs58 = "0.5.1"
 rand = "0.9.1"
 uuid = { version = "1.17.0", features = ["v4"] }
+tracing = "0.1.40"

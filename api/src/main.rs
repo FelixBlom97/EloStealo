@@ -5,19 +5,19 @@ mod socket_handlers;
 mod socket_handler;
 mod game_room;
 mod handler;
-mod DTOs;
+mod dtos;
 mod game_store;
 
 use std::env;
 use crate::configuration::ApplicationSettings;
 use axum::response::Redirect;
 use axum::{
-    routing::{get, post},
+    routing::{get},
     Router,
 };
 use env_logger::Env;
-use socketioxide::SocketIo;
 use std::net::SocketAddr;
+use axum::routing::post;
 use sqlx::postgres::PgPoolOptions;
 use tower_http::services::fs::ServeFile;
 use tower_http::services::ServeDir;
@@ -57,9 +57,9 @@ async fn main() {
         .nest_service("/", client)
         .route("/online", get(|| async { Redirect::permanent("/") }))
         .route("/about", get(|| async { Redirect::permanent("/") }))
-        //.route("/api/startgame", post(handler::start_local_game))
+        .route("/api/startgame", post(handler::start_local_game))
         .route("/api/rules", get(handler::stealo_rules))
-        //.route("/ws/:room_id", get(socket_handler::websocket_handler))
+        .route("/ws/:room_id", get(socket_handler::websocket_handler))
         .layer(session_layer)
         .with_state(state);
 

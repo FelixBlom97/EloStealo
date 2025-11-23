@@ -4,13 +4,11 @@ use axum::Json;
 use futures_util::TryFutureExt;
 use tower_sessions::{Session};
 use tracing::log;
-use persistence::game_id::GameId;
 use uuid::Uuid;
 use domain::chessgame::ChessGame;
 use persistence::stealo_rule::StealoRule;
 use crate::AppState;
-use crate::DTOs::game_info_dto::GameInfoDTO;
-use crate::DTOs::new_game_dto::{NewLocalGameDTO, NewOnlineGameDTO};
+use crate::dtos::new_game_dto::{NewLocalGameDTO};
 
 const UUID_SESSION_KEY: &str = "user_uuid";
 
@@ -37,20 +35,6 @@ pub async fn start_local_game(
 
     log::info!("Game {:?} created", game_id);
     Ok(game_id.into_string())
-}
-
-pub async fn start_online_game(
-    State(state): State<AppState>,
-    session: Session,
-    new_online_game_dto: NewOnlineGameDTO
-) -> Result<String, StatusCode> {
-    let user_uuid: Uuid = get_or_create_user_uuid(session)
-        .map_err(|_| return StatusCode::INTERNAL_SERVER_ERROR)
-        .await?;
-    let p1 = new_online_game_dto.player1;
-    let elo1 = new_online_game_dto.elo1;
-
-    Ok(p1.to_string())
 }
 
 pub async fn get_or_create_user_uuid(session: Session) -> anyhow::Result<Uuid> {

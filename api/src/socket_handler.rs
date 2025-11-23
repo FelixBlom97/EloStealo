@@ -1,7 +1,7 @@
 use axum::extract::{Path, State, WebSocketUpgrade};
 use axum::extract::ws::{Message, Utf8Bytes, WebSocket};
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::{Response};
 use futures_util::{sink::SinkExt, stream::StreamExt, TryFutureExt};
 use tower_sessions::Session;
 use tracing::log;
@@ -12,10 +12,10 @@ use crate::game_room::GameRoom;
 use crate::handler::get_or_create_user_uuid;
 
 pub async fn websocket_handler(
+    session: Session,
     ws: WebSocketUpgrade,
     Path(room_id): Path<String>,
     State(state): State<AppState>,
-    session: Session,
 ) -> Result<Response, StatusCode> {
     log::info!("New WebSocket connection attempt for room: {}", room_id);
 
@@ -25,13 +25,13 @@ pub async fn websocket_handler(
         .map_err(|_| StatusCode::BAD_REQUEST)?;
 
     let user_uuid: Uuid = get_or_create_user_uuid(session)
-        .map_err(|_| return StatusCode::INTERNAL_SERVER_ERROR)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
         .await?;
 
     Ok(ws.on_upgrade(move |socket| handle_socket(socket, game_room, state, user_uuid)))
 }
 
-async fn handle_socket(socket: WebSocket, game_room: GameRoom, state: AppState, user_uuid: Uuid) {
+async fn handle_socket(socket: WebSocket, game_room: GameRoom, _state: AppState, user_uuid: Uuid) {
     let (mut sender, mut receiver) = socket.split();
     let mut rx = game_room.tx.subscribe();
 
